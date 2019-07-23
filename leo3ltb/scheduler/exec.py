@@ -40,7 +40,6 @@ class Exec:
             stdout, stderr = self.process.communicate(timeout=self.timeout)
         except subprocess.TimeoutExpired:
             self.terminate()
-            self.process.kill()
             stdout, stderr = self.process.communicate()
             return stdout, stderr, 'Timeout'
         return stdout, stderr, 'Completed'

@@ -22,6 +22,8 @@ class SchedulerTask(Task):
         self.exec = self.env.exec()
         
         self.problemVariant.szsStatus = 'InProgress'
+        self.problemVariant.schedulerStatus = 'Running'
+
         self.problemVariant.timer.start()
         
         self.exec.prove(problemFile, 
@@ -79,6 +81,7 @@ class Scheduler(ThreadedCallbackExecuter):
         )
         problemVariant.activeTask = task
         problemVariant.szsStatus = 'InProgress'
+        problemVariant.schedulerStatus = 'Queued'
 
         self.schedule(task)
 
@@ -147,17 +150,21 @@ class Scheduler(ThreadedCallbackExecuter):
         self.finishHistory.append(problemVariant)
 
         if processStatus == 'Timeout':
-            problemVariant.szsStatus = 'TimeoutForced'
+            problemVariant.szsStatus = 'Timeout'
+            problemVariant.schedulerStatus = 'ProcessTimeout'
             logger.debug(format.red('onTimeout {}').format(task))
             self.onTimeout(problemVariant)
             return
 
         if problemVariant.szsStatus == 'User':
+            problemVariant.schedulerStatus = 'ForcedTermination'
             logger.debug(format.red('onUserForced {}').format(task))
             self.onUserForced(problemVariant)
             return
 
         problemVariant.szsStatus = getSZSStatus(stdout)
+        problemVariant.schedulerStatus = 'Completed'
+
         logger.debug(format.magenta('onTaskFinish {}').format(task))
         if(problemVariant.isSuccessful()):
             # move to successful solve problems

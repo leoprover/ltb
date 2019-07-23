@@ -47,11 +47,11 @@ class MyScheduler(Scheduler):
         logger.debug('\n'+self.status())
 
     def onTimeout(self, problemVariant):
-        logger.info('onTimeout {}'.format(problemVariant))
+        logger.info(format.red('onTimeout {}').format(problemVariant))
         logger.debug('\n'+self.status())
 
     def onUserForced(self, problemVariant):
-        logger.info(format.red('onForced {}').format(problemVariant))
+        logger.info(format.red('onUserForced {}').format(problemVariant))
         logger.debug('\n'+self.status())
 
 env = Environment(

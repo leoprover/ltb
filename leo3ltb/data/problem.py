@@ -32,6 +32,7 @@ class ProblemVariant:
 
         self.variant = variant
         self.szsStatus = 'NotTriedYet'
+        self.schedulerStatus = 'Unused'
         self.stdout = None
         self.stderr = None
         self.timeout = timeout
@@ -52,9 +53,10 @@ class ProblemVariant:
         return SZS_STATUS.isSuccess(self.szsStatus)
 
     def __str__(self):
-        return '{name} {status} t={time}/{timeout}s, {stdout}, {stderr}'.format(
+        return '{name} status:[{szsStatus},{scheduler},{time}/{timeout}s] {stdout}, {stderr}'.format(
             name=self.getProblemFile(),
-            status=self.szsStatus,
+            szsStatus=self.szsStatus,
+            scheduler=self.schedulerStatus,
             stdout=self.stdout,
             stderr=self.stderr,
             time=self.timer,
