@@ -1,6 +1,6 @@
 import logging
 
-from .threading import Task, ThreadedCallbackExecuter
+from ..concurrent.threading import Task, ThreadedCallbackExecuter
 from concurrent.futures import TimeoutError
 from ..data.problem import ProblemVariant
 from .. import format
@@ -41,8 +41,7 @@ class SchedulerTask(Task):
         return self.exec.terminate()
 
     def __str__(self):
-        return '[{idx}]{name}'.format(
-            idx=self.idx,
+        return '{name}'.format(
             name=self.problemVariant,
         )
 
@@ -83,7 +82,7 @@ class Scheduler(ThreadedCallbackExecuter):
         problemVariant.szsStatus = 'InProgress'
         problemVariant.schedulerStatus = 'Queued'
 
-        self.schedule(task)
+        self.submit(task)
 
     def terminateProblemVariants(self, problem):
         for key, problemVariant in problem.variants.items():

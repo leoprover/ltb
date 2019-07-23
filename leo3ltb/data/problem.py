@@ -53,7 +53,7 @@ class ProblemVariant:
         return SZS_STATUS.isSuccess(self.szsStatus)
 
     def __str__(self):
-        return '{name} status:[{szsStatus},{scheduler},{time}/{timeout}s] {stdout}, {stderr}'.format(
+        return '{name} [{szsStatus},{scheduler},{time}/{timeout}s] {stdout}, {stderr}'.format(
             name=self.getProblemFile(),
             szsStatus=self.szsStatus,
             scheduler=self.schedulerStatus,
