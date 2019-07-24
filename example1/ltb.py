@@ -8,7 +8,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import logging
 from leo3ltb.data import parseFile
 from leo3ltb.concurrent import threading
-from leo3ltb.scheduler import scheduler, Environment, Scheduler, Exec
+from leo3ltb.concurrent import process
+from leo3ltb.scheduler import scheduler, Scheduler, SchedulerProcess
 from leo3ltb.data import ProblemVariant
 from leo3ltb import format
 
@@ -21,6 +22,7 @@ logging.basicConfig(level=logging.DEBUG,
 )
 
 threading.logger.setLevel(logging.DEBUG)
+process.logger.setLevel(logging.DEBUG)
 scheduler.logger.setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
@@ -31,7 +33,7 @@ logger.setLevel(logging.DEBUG)
 '''
 ex1 = parseFile('batches.ltb')
 
-class MyExec(Exec):
+class MySchedulerProcess(SchedulerProcess):
     '''
     Function returning the shell command to call the underlaying prover given a set of call parameter
     '''
@@ -55,13 +57,9 @@ class MyScheduler(Scheduler):
         logger.info(format.red('onUserForced {}').format(problemVariant))
         logger.debug('\n'+self.status())
 
-env = Environment(
-    exec=MyExec,
-    threads=3,
-)
-
 scheduler = MyScheduler( 
-    env=env,
+    threads=3,
+    schedulerProcessClass=MySchedulerProcess,
     problems=ex1.batches[0].problems,
     timeout=100,
 )
@@ -70,15 +68,15 @@ p1 = ex1.batches[0].problems[0]
 p2 = ex1.batches[0].problems[1]
 p3 = ex1.batches[0].problems[2]
 
-scheduler.run(ProblemVariant(p1, variant='^3', timeout=10))
-scheduler.run(ProblemVariant(p1, variant='^1', timeout=10))
-scheduler.run(ProblemVariant(p1, variant='^2', timeout=10))
+scheduler.run(ProblemVariant(p1, variant='^3'), timeout=10)
+scheduler.run(ProblemVariant(p1, variant='^1'), timeout=10)
+scheduler.run(ProblemVariant(p1, variant='^2'), timeout=10)
 
-scheduler.run(ProblemVariant(p2, variant='^3', timeout=10))
-scheduler.run(ProblemVariant(p2, variant='^1', timeout=10))
-scheduler.run(ProblemVariant(p2, variant='^2', timeout=10))
+scheduler.run(ProblemVariant(p2, variant='^3'), timeout=10)
+scheduler.run(ProblemVariant(p2, variant='^1'), timeout=10)
+scheduler.run(ProblemVariant(p2, variant='^2'), timeout=10)
 
-scheduler.run(ProblemVariant(p3, variant='^3', timeout=10))
-scheduler.run(ProblemVariant(p3, variant='^1', timeout=10))
-scheduler.run(ProblemVariant(p3, variant='^2', timeout=10))
+scheduler.run(ProblemVariant(p3, variant='^3'), timeout=10)
+scheduler.run(ProblemVariant(p3, variant='^1'), timeout=10)
+scheduler.run(ProblemVariant(p3, variant='^2'), timeout=10)
 scheduler.wait()

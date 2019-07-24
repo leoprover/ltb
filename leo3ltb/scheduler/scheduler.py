@@ -1,7 +1,6 @@
 import logging
 
-from ..concurrent.threading import Task, ThreadedCallbackExecuter
-from concurrent.futures import TimeoutError
+from ..concurrent.process import Process, ThreadProcessExecuter
 from ..data.problem import ProblemVariant
 from .. import format
 from ..utils.szsStatus import getSZSStatus
@@ -9,162 +8,85 @@ from ..utils.szsStatus import getSZSStatus
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
-class SchedulerTask(Task):
-    def __init__(self, *, problemVariant, env):
-        super(SchedulerTask, self).__init__()
+class SchedulerProcess(Process):
+    def __init__(self, problemVariant, *, timeout):
         self.problemVariant = problemVariant
-        self.env = env
 
-    def run(self):
-        problemFile = self.problemVariant.getProblemFile()
-        timeout = self.problemVariant.timeout
+        problemFile = problemVariant.getProblemFile()
 
-        self.exec = self.env.exec()
-        
-        self.problemVariant.szsStatus = 'InProgress'
-        self.problemVariant.schedulerStatus = 'Running'
+        call = list(map(str, self.generateProverCall(problemFile, timeout)))
+        super(SchedulerProcess, self).__init__(call, timeout=timeout)
 
-        self.problemVariant.timer.start()
-        
-        self.exec.prove(problemFile, 
-            timeout=timeout,
-        )
+    def generateProverCall(self, problemFile, timeout):
+        raise NotImplementedError
 
-        stdout, stderr, processStatus = self.exec.wait()
-        self.problemVariant.timer.end()
-        return stdout, stderr, processStatus
-
-    def terminate(self):
-        '''
-        Kill the underlaying execution
-        '''
-        return self.exec.terminate()
-
-    def __str__(self):
-        return '{name}'.format(
-            name=self.problemVariant,
-        )
-
-class Scheduler(ThreadedCallbackExecuter):
-    def __init__(self, *, env, problems, timeout):
-        super(Scheduler, self).__init__(threads=env.threads)
+class Scheduler(ThreadProcessExecuter):
+    def __init__(self, *, threads, schedulerProcessClass, problems, timeout):
+        super(Scheduler, self).__init__(threads=threads)
         self.noSuccessProblems = problems
         self.successProblems = []
         self.scheduleHistory = []
         self.finishHistory = [] 
         self.timeout = timeout
-        self.env = env
+        self.schedulerProcessClass = schedulerProcessClass
 
     def status(self):
-        return 'noSuccess:\n{noSuccess}\nsuccess:\n{success}\nhistory:\n{history}\nactive:\n{active}\nscheduled:\n{scheduled}'.format(
+        return 'noSuccess:\n{noSuccess}\nsuccess:\n{success}\nhistory:\n{history}\nscheduled:\n{scheduled}\nrunning:\n{running}'.format(
             noSuccess=format.indent(map(str,self.noSuccessProblems), '  '),
             success=format.indent(map(str,self.successProblems), '  '),
             history=format.indent(map(str,self.finishHistory), '  '),
-            active=format.indent(map(str,self.activeProblemVariants()), '  '),
             scheduled=format.indent(map(str,self.scheduledProblemVariants()), '  '),
+            running=format.indent(map(str,self.runningProblemVariants()), '  '),
         )
 
-    def activeProblemVariants(self):
-        return list(map(lambda v: v.problemVariant, self.activeTasks()))
-
     def scheduledProblemVariants(self):
-        return list(map(lambda v: v.problemVariant, self.scheduledTasks()))
+        ps = self.scheduledProcesses()
+        psv = []
+        for p in ps:
+            psv.append(p.problemVariant)
+        return psv
 
-    def run(self, problemVariant):
+    def runningProblemVariants(self):
+        ps = self.runningProcesses()
+        psv = []
+        for p in ps:
+            psv.append(p.problemVariant)
+        return psv
+
+    def run(self, problemVariant, *, timeout):
         self.scheduleHistory.append(problemVariant)
         logger.debug(format.magenta('schedule {}').format(problemVariant))
 
-        task = SchedulerTask(
+        process = self.schedulerProcessClass(
             problemVariant=problemVariant,
-            env=self.env,
+            timeout=timeout,
         )
-        problemVariant.activeTask = task
+        problemVariant.process = process
         problemVariant.szsStatus = 'InProgress'
         problemVariant.schedulerStatus = 'Queued'
 
-        self.submit(task)
+        self.submit(process)
 
     def terminateProblemVariants(self, problem):
         for key, problemVariant in problem.variants.items():
-            if problemVariant.activeTask:
+            if problemVariant.process.isRunning():
                 problemVariant.szsStatus = 'User'
-                task = problemVariant.activeTask
+                process = problemVariant.process
                 
-                result = task.terminate()
-                logger.debug(format.red('terminating {}: {}').format(task, result))
+                result = process.terminate()
+                logger.debug(format.red('terminating {}: {}').format(process, result))
 
-    def onBefore(self, problemVariant):
-        '''
-        Called whenever a problem variant is finished, before anything else
-        '''
-        raise NotImplementedError
-
-    def onAfter(self, problemVariant):
-        '''
-        Called whenever a problem variant is finished, after anything else
-        '''
-        raise NotImplementedError
-
-    def onSuccess(self, problemVariant):
-        '''
-        Called whenever a problem variant is finished with success
-        '''
-        raise NotImplementedError
-
-    def onNoSuccess(self, problemVariant):
-        '''
-        Called whenever a problem variant is finished with no success
-        '''
-        raise NotImplementedError
-
-    def onTimeout(self, problemVariant):
-        '''
-        Called whenever a problem variant has a timeout
-        '''
-        raise NotImplementedError
-
-    def onCancled(self, problemVariant):
-        '''
-        @UNUSED, REMOVE ? Called whenever a problem variant is force to cancled, an an exception is thrown
-        '''
-        raise NotImplementedError
-
-    def onUserForced(self, problemVariant):
-        '''
-        Called whenever a problem variant is force to cancled
-        '''
-        raise NotImplementedError
-
-    def onTaskFinish(self, task, result):
-        stdout = result[0]
-        stderr = result[1]
-        processStatus = result[2]
-
-        problemVariant = task.problemVariant
-        
-        problemVariant.activeTask = None
+    def onProcessCompleted(self, process, stdout, stderr):
+        problemVariant = process.problemVariant
         problemVariant.stdout = stdout
         problemVariant.stderr = stderr
 
         self.finishHistory.append(problemVariant)
 
-        if processStatus == 'Timeout':
-            problemVariant.szsStatus = 'Timeout'
-            problemVariant.schedulerStatus = 'ProcessTimeout'
-            logger.debug(format.red('onTimeout {}').format(task))
-            self.onTimeout(problemVariant)
-            return
-
-        if problemVariant.szsStatus == 'User':
-            problemVariant.schedulerStatus = 'ForcedTermination'
-            logger.debug(format.red('onUserForced {}').format(task))
-            self.onUserForced(problemVariant)
-            return
-
         problemVariant.szsStatus = getSZSStatus(stdout)
         problemVariant.schedulerStatus = 'Completed'
 
-        logger.debug(format.magenta('onTaskFinish {}').format(task))
+        logger.debug(format.magenta('onTaskFinish {}').format(process))
         if(problemVariant.isSuccessful()):
             # move to successful solve problems
             problem = problemVariant.problem
@@ -178,20 +100,25 @@ class Scheduler(ThreadedCallbackExecuter):
         else:
             self.onNoSuccess(problemVariant)
 
-    def onTaskCanceled(self, task):
-        '''
-        @UNUSED, REMOVE ?
-        '''
-        problemVariant = task.problemVariant
-        problemVariant.activeTask = None
+    def onProcessTimeout(self, process, stdout, stderr):
+        problemVariant = process.problemVariant
+        problemVariant.stdout = stdout
+        problemVariant.stderr = stderr
 
         self.finishHistory.append(problemVariant)
-        
-        logger.debug(format.red('onTaskCanceled {}').format(task))
-        self.onCancled(problemVariant)
 
-    def onTaskProcessError(self, task):
-        problemVariant = task.problemVariant
+        problemVariant.szsStatus = 'Timeout'
+        problemVariant.schedulerStatus = 'ProcessTimeout'
+        logger.debug(format.red('onTimeout {}').format(process))
+        self.onTimeout(problemVariant)
+
+    def onProcessForcedTerminated(self, process, stdout, stderr):
+        problemVariant = process.problemVariant
+        problemVariant.stdout = stdout
+        problemVariant.stderr = stderr
+
         self.finishHistory.append(problemVariant)
-        
-        logger.debug(format.red('onTaskProcessError {}').format(task))
+
+        problemVariant.schedulerStatus = 'ForcedTermination'
+        logger.debug(format.red('onUserForced {}').format(process))
+        self.onUserForced(problemVariant)

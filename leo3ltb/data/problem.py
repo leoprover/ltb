@@ -1,5 +1,4 @@
 from ..constants import SZS_STATUS
-from .timer import Timer
 
 class Problem:
     def __init__(self, filePattern, output):
@@ -25,21 +24,17 @@ class Problem:
         )
 
 class ProblemVariant:
-    def __init__(self, problem, *, variant, timeout):
+    def __init__(self, problem, *, variant):
         self.problem = problem
         # back reference
         self.problem.variants[variant] = self
 
         self.variant = variant
         self.szsStatus = 'NotTriedYet'
-        self.schedulerStatus = 'Unused'
         self.stdout = None
         self.stderr = None
-        self.timeout = timeout
-        # ative task to calculate this variant
-        self.activeTask = None
 
-        self.timer = Timer()
+        self.process = None
 
     def getProblemFile(self):
         '''
@@ -53,12 +48,10 @@ class ProblemVariant:
         return SZS_STATUS.isSuccess(self.szsStatus)
 
     def __str__(self):
-        return '{name} [{szsStatus},{scheduler},{time}/{timeout}s] {stdout}, {stderr}'.format(
+        return '{name} [{szsStatus}, {processState}] {stdout} {stderr}'.format(
             name=self.getProblemFile(),
             szsStatus=self.szsStatus,
-            scheduler=self.schedulerStatus,
+            processState=self.process.stateStr() if self.process else 'no process',
             stdout=self.stdout,
             stderr=self.stderr,
-            time=self.timer,
-            timeout=self.timeout,
         )

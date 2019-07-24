@@ -10,12 +10,20 @@ class Task:
     def run(self):
         raise NotImplementedError()
 
-class ThreadedCallbackExecuter:
+class ThreadedTaskExecuter:
     '''
     Usage:
-    * call ex.schedule(task) to queue a "task" for executing. Each task need a "run()" method.
-    * onTaskFinish(task, result) is call iff the "task" finisched successfully. "result" contains the result of the task.
-    * onTaskCanceled(task) is called iff the task is canceled
+    * instance.submit(task) to queue a "task" for executing. Each task need a "run()" method
+    * instance.wait() to wait for the termination of all submitted tasks
+    * onTaskFinish(task, result) needs to be overloaded
+      - is call iff the "task" finisched successfully. "result" contains the result of the task
+      - allows submitting a task using self.submit(task) inside this function call
+    * onTaskCanceled(task) needs to be overloaded
+      - is called iff the task is canceled 
+      - allows submitting a task using self.submit(task) inside this function call
+    
+    * instance.submittedTasks() to get all submitted tasks
+    * instance.runningTasks() to get all running tasks
     '''
 
     def __init__(self, *, 
@@ -23,21 +31,20 @@ class ThreadedCallbackExecuter:
     ):
         self.executor = futures.ThreadPoolExecutor(max_workers=threads)
         self.activeFutures = set()
-        self.idx = 0
-
-    def activeTasks(self):
-        activeTasks = []
-        for future in self.activeFutures:
-            activeTasks.append(future.task)
-
-        return activeTasks
 
     def scheduledTasks(self):
         scheduled = []
         for future in self.activeFutures:
-            if future.running():
-                scheduled.append(future.task)
+            scheduled.append(future.task)
+
         return scheduled
+
+    def runningTasks(self):
+        running = []
+        for future in self.activeFutures:
+            if future.running():
+                running.append(future.task)
+        return running
 
     def submit(self, task):
         logger.debug('schedule {}'.format(task))
