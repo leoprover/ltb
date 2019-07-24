@@ -122,3 +122,16 @@ class Scheduler(ThreadProcessExecuter):
         problemVariant.schedulerStatus = 'ForcedTermination'
         logger.debug(format.red('onUserForced {}').format(process))
         self.onUserForced(problemVariant)
+
+    def onSuccess(self, problemVariant):
+        NotImplementedError()
+
+    def onNoSuccess(self, problemVariant):
+        NotImplementedError()
+
+    def onTimeout(self, problemVariant):
+        NotImplementedError()
+
+    def onUserForced(self, problemVariant):
+        NotImplementedError()
+

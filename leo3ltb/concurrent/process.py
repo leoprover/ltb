@@ -183,10 +183,10 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
             self.onProcessForcedTerminated(process, stdout, stderr)
 
     def onProcessCompleted(self, process, stdout, stderr):
-        pass
+        NotImplementedError()
 
     def onProcessTimeout(self, process, stdout, stderr):
-        pass
+        NotImplementedError()
 
     def onProcessForcedTerminated(self, process, stdout, stderr):
-        pass
+        NotImplementedError()
