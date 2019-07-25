@@ -149,14 +149,21 @@ class ProveScheduler(ThreadProcessExecuter):
         logger.debug(format.magenta('schedule {}').format(process))
         self.submit(process)
 
+    def terminate(self, problemVariant):
+        if not problemVariant.process.isRunning():
+            return False
+
+        problemVariant.szsStatus = 'User'
+        process = problemVariant.process
+        
+        process.terminate()
+        logger.debug(format.red('terminating {}').format(process))
+        return True
+
+
     def terminateProblemVariants(self, problem):
         for key, problemVariant in problem.variants.items():
-            if problemVariant.process.isRunning():
-                problemVariant.szsStatus = 'User'
-                process = problemVariant.process
-                
-                result = process.terminate()
-                logger.debug(format.red('terminating {}: {}').format(process))
+            self.terminate(problemVariant)
 
     def onProcessCompleted(self, process, stdout, stderr):
         problemVariant = process.problemVariant
@@ -213,12 +220,16 @@ class ProveScheduler(ThreadProcessExecuter):
     def onSuccess(self, problemVariant):
         '''
         Called if the prove call of 'problemVariant' is terminated with a success-szs-status.
+
+        Needs to be overwritten.
         '''
         NotImplementedError()
 
     def onNoSuccess(self, problemVariant):
         '''
         Called if the prove call of 'problemVariant' is terminated with a nosuccess-szs-status.
+
+        Needs to be overwritten.
         '''
         NotImplementedError()
 
@@ -229,9 +240,18 @@ class ProveScheduler(ThreadProcessExecuter):
             - problemVariant.schedulerStatus == 'ProcessTimeout'
         2. the process run into a timeout is was killed by python, then:
             - problemVariant.schedulerStatus == 'Completed'
+
+        Needs to be overwritten.
         '''
         NotImplementedError()
 
     def onUserForced(self, problemVariant):
+        '''
+        Called if the prove call is terminated by the scheduler using one of
+        * terminate(problemVariant)
+        * terminateProblemVariants(problem)
+
+        Needs to be overwritten.
+        '''
         NotImplementedError()
 

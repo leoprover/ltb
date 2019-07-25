@@ -128,7 +128,7 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
     Usage:
     * instance.submit(process, timeout) to queue a process for executing
     * instance.wait() to wait for the termination of all submitted processes
-    * instance.terminate(process) to manually terminate a process
+    * instance.terminateProcess(process) to manually terminate a process
     * onProcessCompleted(self, process, stdout, stderr) needs to be overloaded
       - is call iff the process finisched. 
       - gets "stdout" and "stderr" of the process.
@@ -163,7 +163,7 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
             ps.append(t.process)
         return ps
 
-    def terminate(self, process):
+    def terminateProcess(self, process):
         process.terminate()
 
     def onTaskFinish(self, task, result):
