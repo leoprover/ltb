@@ -53,7 +53,7 @@ logger.setLevel(logging.WARNING)
 
 class ProveSchedulerProcess(Process):
     '''
-    Process runned by the Scheduler to prove a [problemVariant](/problem.md).
+    Process runned by the Scheduler to prove a [problemVariant](problem.md).
     '''
     def __init__(self, problemVariant, *, timeout):
         self.problemVariant = problemVariant

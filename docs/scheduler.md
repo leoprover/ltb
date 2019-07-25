@@ -98,7 +98,7 @@ Otherwise use a custom implementation of 'ProveSchedulerProcess'
 ProveSchedulerProcess(self, problemVariant, *, timeout)
 ```
 
-Process runned by the Scheduler to prove a [problemVariant](/problem.md).
+Process runned by the Scheduler to prove a [problemVariant](problem.md).
 
 ### generateProverCall
 ```python
