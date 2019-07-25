@@ -21,7 +21,7 @@ generate:
 # in the documentation. The path must be relative to current working directory.
 # This configuration is not mandatory if you have your own mkdocs.yml config file.
 pages:
-- Home: index.md << README.md
+- Home: index.md
 - Proving:
   - Problem: problem.md
   - ProveScheduler: scheduler.md
