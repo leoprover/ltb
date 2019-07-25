@@ -49,9 +49,9 @@ ProveScheduler(self, *, threads, schedulerProcessClass, problems, timeout)
 ```
 
 Args:
-    * threads: number of concurrent threads(and external processes) to use
-    * problems: problems to prove by the Scheduler
-    * schedulerProcessClass: use you class implementing SchedulerProcess. If you are using Leo-III you may use 'Leo3SchedulerProcess'
+* threads: number of concurrent threads(and external processes) to use
+* problems: problems to prove by the Scheduler
+* schedulerProcessClass: use you class implementing SchedulerProcess. If you are using Leo-III you may use 'Leo3SchedulerProcess'
 
 ### status
 ```python
@@ -110,16 +110,16 @@ Function returning the shell command to call the underlaying prover given a set 
 Needs to be overwritten s.t. an appropriate commandline call is provided.
 
 Args:
-    * problemFile: the problem that should be used
-    * timeout: the timeout in seconds when the process should be finished, if exceeded, the process is killed
+* problemFile: the problem that should be used
+* timeout: the timeout in seconds when the process should be finished, if exceeded, the process is killed
 
 Returns:
-    * the cmd command to run the prover on the given problem
+* the cmd command to run the prover on the given problem
 
 Example:
-    1. Using the Leo-III theorem prover [Leo-III Usage](https://github.com/leoprover/Leo-III/blob/master/USAGE.md):
-        If the shell command 'leo3' calls Leo-III. You should implement the method with return
-        ```
-        ['leo3', problemFile, '-t', timeout]
-        ```
+1. Using the Leo-III theorem prover [Leo-III Usage](https://github.com/leoprover/Leo-III/blob/master/USAGE.md).
+If the shell command 'leo3' calls Leo-III. You should implement the method with return
+```
+['leo3', problemFile, '-t', timeout]
+```
 
