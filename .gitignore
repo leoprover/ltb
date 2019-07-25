@@ -51,3 +51,6 @@ coverage.xml
 
 # misc
 *~
+
+# docs
+.docs-html/
