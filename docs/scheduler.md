@@ -67,12 +67,16 @@ ProveScheduler.onSuccess(self, problemVariant)
 
 Called if the prove call of 'problemVariant' is terminated with a success-szs-status.
 
+Needs to be overwritten.
+
 ### onNoSuccess
 ```python
 ProveScheduler.onNoSuccess(self, problemVariant)
 ```
 
 Called if the prove call of 'problemVariant' is terminated with a nosuccess-szs-status.
+
+Needs to be overwritten.
 
 ### onTimeout
 ```python
@@ -84,6 +88,19 @@ Called if the prove call of 'problemVariant' is either:
     - problemVariant.schedulerStatus == 'ProcessTimeout'
 2. the process run into a timeout is was killed by python, then:
     - problemVariant.schedulerStatus == 'Completed'
+
+Needs to be overwritten.
+
+### onUserForced
+```python
+ProveScheduler.onUserForced(self, problemVariant)
+```
+
+Called if the prove call is terminated by the scheduler using one of
+* terminate(problemVariant)
+* terminateProblemVariants(problem)
+
+Needs to be overwritten.
 
 ## Leo3SchedulerProcess
 ```python
