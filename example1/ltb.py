@@ -9,7 +9,7 @@ import logging
 from leo3ltb.data import parseFile
 from leo3ltb.concurrent import threading
 from leo3ltb.concurrent import process
-from leo3ltb.scheduler import scheduler, Scheduler, SchedulerProcess
+from leo3ltb.scheduler import scheduler, ProveScheduler, ProveSchedulerProcess
 from leo3ltb.data import ProblemVariant
 from leo3ltb import format
 
@@ -33,14 +33,14 @@ logger.setLevel(logging.DEBUG)
 '''
 ex1 = parseFile('batches.ltb')
 
-class MySchedulerProcess(SchedulerProcess):
+class MySchedulerProcess(ProveSchedulerProcess):
     '''
     Function returning the shell command to call the underlaying prover given a set of call parameter
     '''
     def generateProverCall(self, problemFile, timeout):
         return [problemFile+'.sh', timeout]
 
-class MyScheduler(Scheduler):
+class MyScheduler(ProveScheduler):
     def onSuccess(self, problemVariant):
         logger.info(format.green('onSuccess {}').format(problemVariant))
         logger.debug('\n'+self.status())
