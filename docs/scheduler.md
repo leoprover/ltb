@@ -15,7 +15,7 @@ class MyScheduler(ProveScheduler):
     def onSuccess(self, problemVariant):
         [...]
         if [...]:
-            scheduler.run(ProblemVariant([p], variant=[variant]), timeout=[t])
+            scheduler.prove(ProblemVariant([p], variant=[variant]), timeout=[t])
         [...]
 
     def onNoSuccess(self, problemVariant):
@@ -37,7 +37,7 @@ scheduler = MyScheduler(
 [...]
 
 p1 = ex1.batches[0].problems[0]
-scheduler.run(ProblemVariant(p1, variant='^3'), timeout=10)
+scheduler.prove(ProblemVariant(p1, variant='^3'), timeout=10)
 
 [...]
 scheduler.wait()
@@ -59,6 +59,41 @@ ProveScheduler.status(self)
 ```
 
 Get the complex status of the Scheduler as human readable string.
+
+### scheduledProblemVariants
+```python
+ProveScheduler.scheduledProblemVariants(self)
+```
+
+Get all problem variants which are enqueued.
+
+### runningProblemVariants
+```python
+ProveScheduler.runningProblemVariants(self)
+```
+
+Get all problem variants where proves are currently running.
+
+### prove
+```python
+ProveScheduler.prove(self, problemVariant, *, timeout)
+```
+
+Enqueus a problemVariant to be proved.
+
+### terminate
+```python
+ProveScheduler.terminate(self, problemVariant)
+```
+
+Terminate the prove of the 'problemVariant'.
+
+### terminateProblemVariants
+```python
+ProveScheduler.terminateProblemVariants(self, problem)
+```
+
+Terminate the prove of all problemVariant of 'problem'.
 
 ### onSuccess
 ```python

@@ -68,15 +68,15 @@ p1 = ex1.batches[0].problems[0]
 p2 = ex1.batches[0].problems[1]
 p3 = ex1.batches[0].problems[2]
 
-scheduler.run(ProblemVariant(p1, variant='^3'), timeout=10)
-scheduler.run(ProblemVariant(p1, variant='^1'), timeout=10)
-scheduler.run(ProblemVariant(p1, variant='^2'), timeout=10)
+scheduler.prove(ProblemVariant(p1, variant='^3'), timeout=10)
+scheduler.prove(ProblemVariant(p1, variant='^1'), timeout=10)
+scheduler.prove(ProblemVariant(p1, variant='^2'), timeout=10)
 
-scheduler.run(ProblemVariant(p2, variant='^3'), timeout=10)
-scheduler.run(ProblemVariant(p2, variant='^1'), timeout=10)
-scheduler.run(ProblemVariant(p2, variant='^2'), timeout=10)
+scheduler.prove(ProblemVariant(p2, variant='^3'), timeout=10)
+scheduler.prove(ProblemVariant(p2, variant='^1'), timeout=10)
+scheduler.prove(ProblemVariant(p2, variant='^2'), timeout=10)
 
-scheduler.run(ProblemVariant(p3, variant='^3'), timeout=10)
-scheduler.run(ProblemVariant(p3, variant='^1'), timeout=10)
-scheduler.run(ProblemVariant(p3, variant='^2'), timeout=10)
+scheduler.prove(ProblemVariant(p3, variant='^3'), timeout=10)
+scheduler.prove(ProblemVariant(p3, variant='^1'), timeout=10)
+scheduler.prove(ProblemVariant(p3, variant='^2'), timeout=10)
 scheduler.wait()

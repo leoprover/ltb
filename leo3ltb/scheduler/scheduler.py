@@ -12,7 +12,7 @@ class MyScheduler(ProveScheduler):
     def onSuccess(self, problemVariant):
         [...]
         if [...]:
-            scheduler.run(ProblemVariant([p], variant=[variant]), timeout=[t])
+            scheduler.prove(ProblemVariant([p], variant=[variant]), timeout=[t])
         [...]
 
     def onNoSuccess(self, problemVariant):
@@ -34,7 +34,7 @@ scheduler = MyScheduler(
 [...]
 
 p1 = ex1.batches[0].problems[0]
-scheduler.run(ProblemVariant(p1, variant='^3'), timeout=10)
+scheduler.prove(ProblemVariant(p1, variant='^3'), timeout=10)
 
 [...]
 scheduler.wait()
@@ -122,6 +122,9 @@ class ProveScheduler(ThreadProcessExecuter):
         )
 
     def scheduledProblemVariants(self):
+        '''
+        Get all problem variants which are enqueued.
+        '''
         ps = self.scheduledProcesses()
         psv = []
         for p in ps:
@@ -129,13 +132,19 @@ class ProveScheduler(ThreadProcessExecuter):
         return psv
 
     def runningProblemVariants(self):
+        '''
+        Get all problem variants where proves are currently running.
+        '''
         ps = self.runningProcesses()
         psv = []
         for p in ps:
             psv.append(p.problemVariant)
         return psv
 
-    def run(self, problemVariant, *, timeout):
+    def prove(self, problemVariant, *, timeout):
+        '''
+        Enqueus a problemVariant to be proved.
+        '''
         self.scheduleHistory.append(problemVariant)
 
         process = self.schedulerProcessClass(
@@ -150,6 +159,9 @@ class ProveScheduler(ThreadProcessExecuter):
         self.submit(process)
 
     def terminate(self, problemVariant):
+        '''
+        Terminate the prove of the 'problemVariant'.
+        '''
         if not problemVariant.process.isRunning():
             return False
 
@@ -162,9 +174,13 @@ class ProveScheduler(ThreadProcessExecuter):
 
 
     def terminateProblemVariants(self, problem):
+        '''
+        Terminate the prove of all problemVariant of 'problem'.
+        '''
         for key, problemVariant in problem.variants.items():
             self.terminate(problemVariant)
 
+    # implementing ThreadProcessExecuter.onProcessCompleted
     def onProcessCompleted(self, process, stdout, stderr):
         problemVariant = process.problemVariant
         problemVariant.stdout = stdout
@@ -194,6 +210,7 @@ class ProveScheduler(ThreadProcessExecuter):
         else:
             self.onNoSuccess(problemVariant)
 
+    # implementing ThreadProcessExecuter.onProcessTimeout
     def onProcessTimeout(self, process, stdout, stderr):
         problemVariant = process.problemVariant
         problemVariant.stdout = stdout
@@ -206,6 +223,7 @@ class ProveScheduler(ThreadProcessExecuter):
         logger.debug(format.red('onTimeout {}').format(process))
         self.onTimeout(problemVariant)
 
+    # implementing ThreadProcessExecuter.onProcessForcedTerminated
     def onProcessForcedTerminated(self, process, stdout, stderr):
         problemVariant = process.problemVariant
         problemVariant.stdout = stdout
