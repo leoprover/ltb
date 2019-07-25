@@ -6,16 +6,17 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import logging
-from leo3ltb.data import parseFile
-from leo3ltb.concurrent import threading
-from leo3ltb.concurrent import process
-from leo3ltb.scheduler import scheduler, ProveScheduler, ProveSchedulerProcess
-from leo3ltb.data import ProblemVariant
+from leo3ltb import LTB, ProblemVariant
+from leo3ltb.scheduler import ProveScheduler, ProveSchedulerProcess
 from leo3ltb import format
 
 '''
 logging
 '''
+from leo3ltb.concurrent import threading
+from leo3ltb.concurrent import process
+from leo3ltb.scheduler import scheduler
+
 logging.basicConfig(level=logging.DEBUG, 
     format='[{threadName}, {name}]: {message}',
     style='{'
@@ -27,11 +28,6 @@ scheduler.logger.setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-'''
-1) parse problem file
-'''
-ex1 = parseFile('batches.ltb')
 
 class MySchedulerProcess(ProveSchedulerProcess):
     '''
@@ -45,6 +41,9 @@ class MyScheduler(ProveScheduler):
         logger.info(format.green('onSuccess {}').format(problemVariant))
         logger.debug('\n'+self.status())
 
+        with self.batch.openTempfile('a', 'w') as out:
+            out.write('test\n')
+
     def onNoSuccess(self, problemVariant):
         logger.info(format.yellow('onNoSuccess {}').format(problemVariant))
         logger.debug('\n'+self.status())
@@ -57,26 +56,27 @@ class MyScheduler(ProveScheduler):
         logger.info(format.red('onUserForced {}').format(problemVariant))
         logger.debug('\n'+self.status())
 
-scheduler = MyScheduler( 
-    threads=3,
-    schedulerProcessClass=MySchedulerProcess,
-    problems=ex1.batches[0].problems,
-    timeout=100,
-)
+with LTB('batches.ltb').batch(0) as batch:
+    scheduler = MyScheduler( 
+        threads=3,
+        schedulerProcessClass=MySchedulerProcess,
+        batch=batch,
+        timeout=100,
+    )
 
-p1 = ex1.batches[0].problems[0]
-p2 = ex1.batches[0].problems[1]
-p3 = ex1.batches[0].problems[2]
+    p1 = batch.definition.problems[0]
+    p2 = batch.definition.problems[1]
+    p3 = batch.definition.problems[2]
 
-scheduler.prove(ProblemVariant(p1, variant='^3'), timeout=10)
-scheduler.prove(ProblemVariant(p1, variant='^1'), timeout=10)
-scheduler.prove(ProblemVariant(p1, variant='^2'), timeout=10)
+    scheduler.prove(ProblemVariant(p1, variant='^3'), timeout=10)
+    scheduler.prove(ProblemVariant(p1, variant='^1'), timeout=10)
+    scheduler.prove(ProblemVariant(p1, variant='^2'), timeout=10)
 
-scheduler.prove(ProblemVariant(p2, variant='^3'), timeout=10)
-scheduler.prove(ProblemVariant(p2, variant='^1'), timeout=10)
-scheduler.prove(ProblemVariant(p2, variant='^2'), timeout=10)
+    scheduler.prove(ProblemVariant(p2, variant='^3'), timeout=10)
+    scheduler.prove(ProblemVariant(p2, variant='^1'), timeout=10)
+    scheduler.prove(ProblemVariant(p2, variant='^2'), timeout=10)
 
-scheduler.prove(ProblemVariant(p3, variant='^3'), timeout=10)
-scheduler.prove(ProblemVariant(p3, variant='^1'), timeout=10)
-scheduler.prove(ProblemVariant(p3, variant='^2'), timeout=10)
-scheduler.wait()
+    scheduler.prove(ProblemVariant(p3, variant='^3'), timeout=10)
+    scheduler.prove(ProblemVariant(p3, variant='^1'), timeout=10)
+    scheduler.prove(ProblemVariant(p3, variant='^2'), timeout=10)
+    scheduler.wait()

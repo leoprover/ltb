@@ -6,10 +6,8 @@ Implementation of a fully customizeable prove scheduler.
 
 Example Implementation:
 ```
-from leo3ltb.data import parseFile
+from leo3ltb import LTB, ProblemVariant
 from leo3ltb.scheduler import ProveScheduler, Leo3SchedulerProcess
-
-ltb = parseFile('batches.ltb')
 
 class MyScheduler(ProveScheduler):
     def onSuccess(self, problemVariant):
@@ -27,30 +25,34 @@ class MyScheduler(ProveScheduler):
     def onUserForced(self, problemVariant):
         [...]
 
-scheduler = MyScheduler(
-    threads=3,                                  # number of threads(external processes) to used
-    schedulerProcessClass=Leo3SchedulerProcess, # Leo-III is installed as shell command 'leo3'
-    problems=ltb.batches[0].problems,           # problems
-    timeout=100,                                # overall timeout
-)
+with LTB('batches.ltb').batch(0) as batch:
+    scheduler = MyScheduler(
+        threads=3,                                  # number of threads(external processes) to used
+        schedulerProcessClass=Leo3SchedulerProcess, # Leo-III is installed as shell command 'leo3'
+        batch=batch,                                # batch of problems
+        timeout=100,                                # overall timeout
+    )
 
-[...]
+    [...]
 
-p1 = ex1.batches[0].problems[0]
-scheduler.prove(ProblemVariant(p1, variant='^3'), timeout=10)
+    p1 = batch.problems[0]
+    scheduler.prove(ProblemVariant(p1, variant='^3'), timeout=10)
 
-[...]
-scheduler.wait()
+    [...]
+    scheduler.wait()
 ```
 
 ## ProveScheduler
 ```python
-ProveScheduler(self, *, threads, schedulerProcessClass, problems, timeout)
+ProveScheduler(self, *, threads, schedulerProcessClass, batch, timeout)
 ```
 
 Args:
 * threads: number of concurrent threads(and external processes) to use
-* problems: problems to prove by the Scheduler
+* batch: batch environment containing:
+    - batch.definiton.problems: problems to prove by the Scheduler in this batch
+    - file = batch.createTempfile(name) to create a temp file
+    - ..
 * schedulerProcessClass: use you class implementing SchedulerProcess. If you are using Leo-III you may use 'Leo3SchedulerProcess'
 
 ### status
@@ -79,7 +81,7 @@ Get all problem variants where proves are currently running.
 ProveScheduler.prove(self, problemVariant, *, timeout)
 ```
 
-Enqueus a problemVariant to be proved.
+Enqueus a problemVariant to prove.
 
 ### terminate
 ```python
