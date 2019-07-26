@@ -1,5 +1,6 @@
 import tempfile
 import os
+import re
 import logging
 import pathlib
 
@@ -120,10 +121,22 @@ class LTBBatchContext:
         problemFilename = pathlib.Path(problemFile).name
         temp = self.tempfile(problemFilename, 'w')
 
-        augmentedIncludes = list(map(lambda i: i.replace('*', problemVariant.variant), self.definition.includes))
+        augmentedIncludes = []
+        for i in self.definition.includes:
+            match = re.match(r'include\([\'\"](.+)[\'\"]\)\.', i)
+            file = match.group(1)
+            file = file.replace('*', problemVariant.variant)
+            augmentedIncludes.append(file)
+
         with temp as out:
-            out.write('\n'.join(augmentedIncludes))
-            with open(problemFile, "r") as prob:
-                out.write(prob.read())
+            for i in augmentedIncludes:
+                try:
+                    with open(i, "r") as f:
+                        out.write(f.read())
+                except:
+                    FileNotFoundError()
+
+            with open(problemFile, "r") as f:
+                out.write(f.read())
 
         return temp.name

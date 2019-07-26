@@ -43,13 +43,23 @@ class MyScheduler(ProveScheduler):
         logger.info(format.red('onTimeout {} {}').format(problemVariant, timeleft))
         logger.debug('\n'+self.status())
 
+        problem = problemVariant.problem
+        if problemVariant.variant == '^3':
+            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=10)
+        if problemVariant.variant == '^1':
+            scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=10)
+
     def onUserForced(self, problemVariant, timeleft):
         logger.info(format.red('onUserForced {} {}').format(problemVariant, timeleft))
         logger.debug('\n'+self.status())
 
-args = leo3ltb.parse_args()
-print(str(args))
+        problem = problemVariant.problem
+        if problemVariant.variant == '^3':
+            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=10)
+        if problemVariant.variant == '^1':
+            scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=10)
 
+args = leo3ltb.parse_args()
 with leo3ltb.batch_from_args(args) as batch:
     #threading.logger.addHandler(batch.log)
     #process.logger.addHandler(batch.log)

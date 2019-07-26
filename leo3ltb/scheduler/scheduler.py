@@ -154,6 +154,9 @@ class ProveScheduler(ThreadProcessExecuter):
     # implementing ThreadProcessExecuter.onProcessCompleted
     def onProcessCompleted(self, process, stdout, stderr):
         problemVariant = process.problemVariant
+        problem = problemVariant.problem
+        wasAlreadySuccessfull = problem.isSuccessful()
+
         problemVariant.stdout = stdout
         problemVariant.stderr = stderr
 
@@ -175,16 +178,7 @@ class ProveScheduler(ThreadProcessExecuter):
                 self.successProblems.append(problem)
                 self.terminateProblemVariants(problem)
 
-        '''
-        store, and override the output
-        TODO: do we override to much?
-        '''
-        with self.batch.outfile(problem.getOutfile(), 'w') as out:
-            for line in problemVariant.stdout:
-                out.write(line)
-                if line != '': out.write('\n')
-        self._cleanupProve(problemVariant)
-
+        self._cleanupProve(problemVariant, alreadySuccessfull=wasAlreadySuccessfull)
         if(problemVariant.isSuccessful()):
             self.onSuccess(problemVariant, self.timer.timeleft())
         else:
@@ -193,6 +187,9 @@ class ProveScheduler(ThreadProcessExecuter):
     # implementing ThreadProcessExecuter.onProcessTimeout
     def onProcessTimeout(self, process, stdout, stderr):
         problemVariant = process.problemVariant
+        problem = problemVariant.problem
+        wasAlreadySuccessfull = problem.isSuccessful()
+
         problemVariant.stdout = stdout
         problemVariant.stderr = stderr
 
@@ -200,13 +197,16 @@ class ProveScheduler(ThreadProcessExecuter):
         problemVariant.schedulerStatus = 'ProcessTimeout'
 
         logger.debug(format.red('onTimeout {}').format(problemVariant))
-        self._cleanupProve(problemVariant)
-
+        
+        self._cleanupProve(problemVariant, alreadySuccessfull=wasAlreadySuccessfull)
         self.onTimeout(problemVariant, self.timer.timeleft())
 
     # implementing ThreadProcessExecuter.onProcessForcedTerminated
     def onProcessForcedTerminated(self, process, stdout, stderr):
         problemVariant = process.problemVariant
+        problem = problemVariant.problem
+        wasAlreadySuccessfull = problem.isSuccessful()
+
         problemVariant.stdout = stdout
         problemVariant.stderr = stderr
 
@@ -214,8 +214,7 @@ class ProveScheduler(ThreadProcessExecuter):
 
         logger.debug(format.red('onUserForced {}').format(problemVariant))
 
-        self._cleanupProve(problemVariant)
-
+        self._cleanupProve(problemVariant, alreadySuccessfull=wasAlreadySuccessfull)
         self.onUserForced(problemVariant, self.timer.timeleft())
 
     def onSuccess(self, problemVariant, timeleft):
@@ -272,7 +271,17 @@ class ProveScheduler(ThreadProcessExecuter):
         '''
         NotImplementedError()
 
-    def _cleanupProve(self, problemVariant):
+    def _cleanupProve(self, problemVariant, *, alreadySuccessfull):
+        '''
+        store, and override the output
+        TODO: do we override to much?
+        '''
+        if not alreadySuccessfull:
+            with self.batch.outfile(problemVariant.problem.getOutfile(), 'w') as out:
+                for line in problemVariant.stdout:
+                    out.write(line)
+                    if line != '': out.write('\n')
+
         with self.batch.logfile(problemVariant.getOutfile(), 'w') as out:
             for line in problemVariant.stdout:
                 out.write(line)
