@@ -1,4 +1,8 @@
 '''
+currently not working...
+'''
+
+'''
 dev import, import from parent folder
 '''
 import sys
@@ -6,9 +10,9 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import logging
-from leo3ltb import LTB, ProblemVariant
+import leo3ltb 
 from leo3ltb.scheduler import ProveScheduler, ProveSchedulerProcess
-from leo3ltb import format
+from leo3ltb import format, ProblemVariant
 
 '''
 logging
@@ -41,8 +45,10 @@ class MyScheduler(ProveScheduler):
         logger.info(format.green('onSuccess {}').format(problemVariant))
         logger.debug('\n'+self.status())
 
-        with self.batch.openTempfile('a', 'w') as out:
+        tmp = self.batch.tempfile('a', 'w')
+        with tmp as out:
             out.write('test\n')
+        logger.debug('Created Tempfile {}'.format(tmp.name))
 
     def onNoSuccess(self, problemVariant):
         logger.info(format.yellow('onNoSuccess {}').format(problemVariant))
@@ -56,7 +62,8 @@ class MyScheduler(ProveScheduler):
         logger.info(format.red('onUserForced {}').format(problemVariant))
         logger.debug('\n'+self.status())
 
-with LTB('batches.ltb').batch(0) as batch:
+ltb = leo3ltb.parseFile('batches.ltb')
+with leo3ltb.processBatch(ltb.batches[0], tempdir='tmp') as batch:
     scheduler = MyScheduler( 
         threads=3,
         schedulerProcessClass=MySchedulerProcess,

@@ -71,7 +71,6 @@
 '''
 
 class SZS_STATUS:
-    PREFIX = '% SZS status '
     SUCCESS = [ ("SUC", "Success")
     # layer 1
       , ("UNP", "UnsatisfiabilityPreserving")

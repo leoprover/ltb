@@ -4,7 +4,6 @@ import os
 import signal
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
 
 from .threading import ThreadedTaskExecuter, Task
 from .timer import Timer

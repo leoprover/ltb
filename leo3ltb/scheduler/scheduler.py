@@ -1,64 +1,24 @@
 '''
 Implementation of a fully customizeable prove scheduler.
-
-Example Implementation:
-```
-from leo3ltb import LTB, ProblemVariant
-from leo3ltb.scheduler import ProveScheduler, Leo3SchedulerProcess
-
-class MyScheduler(ProveScheduler):
-    def onSuccess(self, problemVariant):
-        [...]
-        if [...]:
-            scheduler.prove(ProblemVariant([p], variant=[variant]), timeout=[t])
-        [...]
-
-    def onNoSuccess(self, problemVariant):
-        [...]
-
-    def onTimeout(self, problemVariant):
-        [...]
-
-    def onUserForced(self, problemVariant):
-        [...]
-
-with LTB('batches.ltb').batch(0) as batch:
-    scheduler = MyScheduler( 
-        threads=3,                                  # number of threads(external processes) to used
-        schedulerProcessClass=Leo3SchedulerProcess, # Leo-III is installed as shell command 'leo3'
-        batch=batch,                                # batch of problems
-        timeout=100,                                # overall timeout
-    )
-
-    [...]
-
-    p1 = batch.problems[0]
-    scheduler.prove(ProblemVariant(p1, variant='^3'), timeout=10)
-
-    [...]
-    scheduler.wait()
-```
 '''
 
 import logging
 
 from ..concurrent.process import Process, ThreadProcessExecuter
+from ..concurrent.timer import CountdownTimer
+
 from ..data.problem import ProblemVariant
 from .. import format
-from ..utils.szsStatus import getSZSStatus
+from ..tptp import getSZSStatus
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
 
 class ProveSchedulerProcess(Process):
     '''
     Process runned by the Scheduler to prove a [problemVariant](problem.md).
     '''
-    def __init__(self, problemVariant, *, timeout):
+    def __init__(self, problemVariant, problemFile, *, timeout):
         self.problemVariant = problemVariant
-
-        problemFile = problemVariant.getProblemFile()
-
         call = list(map(str, self.generateProverCall(problemFile, timeout)))
         super(ProveSchedulerProcess, self).__init__(call, timeout=timeout)
 
@@ -102,7 +62,7 @@ class ProveScheduler(ThreadProcessExecuter):
         - ..
     * schedulerProcessClass: use you class implementing SchedulerProcess. If you are using Leo-III you may use 'Leo3SchedulerProcess'
     '''
-    def __init__(self, *, threads, schedulerProcessClass, batch, timeout):
+    def __init__(self, *, threads, schedulerProcessClass, batch, timeout, withCASCStdout=True):
         super(ProveScheduler, self).__init__(threads=threads)
         self.batch = batch
         self.noSuccessProblems = batch.definition.problems
@@ -111,6 +71,9 @@ class ProveScheduler(ThreadProcessExecuter):
         self.finishHistory = [] 
         self.timeout = timeout
         self.schedulerProcessClass = schedulerProcessClass
+        self.withCASCStdout = withCASCStdout
+
+        self.timer = CountdownTimer(timeout)
 
     def status(self):
         '''
@@ -150,8 +113,10 @@ class ProveScheduler(ThreadProcessExecuter):
         '''
         self.scheduleHistory.append(problemVariant)
 
+        problemFile = self.batch.augmentProblemVariant(problemVariant)
         process = self.schedulerProcessClass(
             problemVariant=problemVariant,
+            problemFile=problemFile,
             timeout=timeout,
         )
         problemVariant.process = process
@@ -159,6 +124,9 @@ class ProveScheduler(ThreadProcessExecuter):
         problemVariant.schedulerStatus = 'Queued'
 
         logger.debug(format.magenta('schedule {}').format(process))
+        if self.withCASCStdout:
+            print('% SZS status Started for {}'.format(problemVariant.getProblemFile()))
+
         self.submit(process)
 
     def terminate(self, problemVariant):
@@ -189,8 +157,6 @@ class ProveScheduler(ThreadProcessExecuter):
         problemVariant.stdout = stdout
         problemVariant.stderr = stderr
 
-        self.finishHistory.append(problemVariant)
-
         problemVariant.szsStatus = getSZSStatus(stdout)
         problemVariant.schedulerStatus = 'Completed'
 
@@ -198,7 +164,7 @@ class ProveScheduler(ThreadProcessExecuter):
             self.onTimeout(problemVariant)
             return
 
-        logger.debug(format.magenta('onFinish {}').format(process))
+        logger.debug(format.magenta('onFinish {}').format(problemVariant))
         if(problemVariant.isSuccessful()):
             # move to successful solve problems
             problem = problemVariant.problem
@@ -209,9 +175,20 @@ class ProveScheduler(ThreadProcessExecuter):
                 self.successProblems.append(problem)
                 self.terminateProblemVariants(problem)
 
-            self.onSuccess(problemVariant)
+        '''
+        store, and override the output
+        TODO: do we override to much?
+        '''
+        with self.batch.outfile(problem.getOutfile(), 'w') as out:
+            for line in problemVariant.stdout:
+                out.write(line)
+                if line != '': out.write('\n')
+        self._cleanupProve(problemVariant)
+
+        if(problemVariant.isSuccessful()):
+            self.onSuccess(problemVariant, self.timer.timeleft())
         else:
-            self.onNoSuccess(problemVariant)
+            self.onNoSuccess(problemVariant, self.timer.timeleft())
 
     # implementing ThreadProcessExecuter.onProcessTimeout
     def onProcessTimeout(self, process, stdout, stderr):
@@ -219,12 +196,13 @@ class ProveScheduler(ThreadProcessExecuter):
         problemVariant.stdout = stdout
         problemVariant.stderr = stderr
 
-        self.finishHistory.append(problemVariant)
-
         problemVariant.szsStatus = 'Timeout'
         problemVariant.schedulerStatus = 'ProcessTimeout'
-        logger.debug(format.red('onTimeout {}').format(process))
-        self.onTimeout(problemVariant)
+
+        logger.debug(format.red('onTimeout {}').format(problemVariant))
+        self._cleanupProve(problemVariant)
+
+        self.onTimeout(problemVariant, self.timer.timeleft())
 
     # implementing ThreadProcessExecuter.onProcessForcedTerminated
     def onProcessForcedTerminated(self, process, stdout, stderr):
@@ -232,47 +210,76 @@ class ProveScheduler(ThreadProcessExecuter):
         problemVariant.stdout = stdout
         problemVariant.stderr = stderr
 
-        self.finishHistory.append(problemVariant)
-
         problemVariant.schedulerStatus = 'ForcedTermination'
-        logger.debug(format.red('onUserForced {}').format(process))
-        self.onUserForced(problemVariant)
 
-    def onSuccess(self, problemVariant):
+        logger.debug(format.red('onUserForced {}').format(problemVariant))
+
+        self._cleanupProve(problemVariant)
+
+        self.onUserForced(problemVariant, self.timer.timeleft())
+
+    def onSuccess(self, problemVariant, timeleft):
         '''
-        Called if the prove call of 'problemVariant' is terminated with a success-szs-status.
+        Called if a proverall is terminated with a success-szs-status.
+
+        Args:
+        * problemVariant: terminated problem variant
+        * timeout left to prove the batch
 
         Needs to be overwritten.
         '''
         NotImplementedError()
 
-    def onNoSuccess(self, problemVariant):
+    def onNoSuccess(self, problemVariant, timeleft):
         '''
-        Called if the prove call of 'problemVariant' is terminated with a nosuccess-szs-status.
+        Called if a prove call is terminated with a nosuccess-szs-status.
+
+        Args:
+        * problemVariant: terminated problem variant
+        * timeout left to prove the batch
 
         Needs to be overwritten.
         '''
         NotImplementedError()
 
-    def onTimeout(self, problemVariant):
+    def onTimeout(self, problemVariant, timeleft):
         '''
-        Called if the prove call of 'problemVariant' is either:
+        Called if a prove call is either:
         1. terminated with the szs-status 'Timeout', then:
             - problemVariant.schedulerStatus == 'ProcessTimeout'
         2. the process run into a timeout is was killed by python, then:
             - problemVariant.schedulerStatus == 'Completed'
 
+        Args:
+        * problemVariant: terminated problem variant
+        * timeout left to prove the batch
+
         Needs to be overwritten.
         '''
         NotImplementedError()
 
-    def onUserForced(self, problemVariant):
+    def onUserForced(self, problemVariant, timeleft):
         '''
-        Called if the prove call is terminated by the scheduler using one of
+        Called if a prove call is terminated by the scheduler, using one of
         * terminate(problemVariant)
         * terminateProblemVariants(problem)
 
+        Args:
+        * problemVariant: terminated problem variant
+        * timeout left to prove the batch
+
         Needs to be overwritten.
         '''
         NotImplementedError()
 
+    def _cleanupProve(self, problemVariant):
+        with self.batch.logfile(problemVariant.getOutfile(), 'w') as out:
+            for line in problemVariant.stdout:
+                out.write(line)
+                if line != '': out.write('\n')
+        
+        self.finishHistory.append(problemVariant)
+
+        if self.withCASCStdout:
+            print('% SZS status {} for {}'.format(problemVariant.szsStatus, problemVariant.getProblemFile()))
+            print('% SZS status Ended for {}'.format(problemVariant.getProblemFile()))

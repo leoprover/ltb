@@ -1,4 +1,4 @@
-from ..constants import SZS_STATUS
+from ..tptp.szsStatus import SZS_STATUS
 
 class Problem:
     def __init__(self, filePattern, output):
@@ -9,6 +9,9 @@ class Problem:
 
     def isSuccessful(self):
         return self.successfulVariant is not None
+
+    def getOutfile(self):
+        return self.output
 
     def __str__(self):
         solvedBy = ''
@@ -31,8 +34,8 @@ class ProblemVariant:
 
         self.variant = variant
         self.szsStatus = 'NotTriedYet'
-        self.stdout = None
-        self.stderr = None
+        self.stdout = []
+        self.stderr = []
 
         self.process = None
 
@@ -44,6 +47,10 @@ class ProblemVariant:
         problemFile = self.problem.filePattern.replace('*', self.variant)
         return problemFile
 
+    def getOutfile(self):
+        outputFile = self.problem.output + self.variant
+        return outputFile
+
     def isSuccessful(self):
         return SZS_STATUS.isSuccess(self.szsStatus)
 
@@ -52,6 +59,6 @@ class ProblemVariant:
             name=self.getProblemFile(),
             szsStatus=self.szsStatus,
             processState=self.process.stateStr() if self.process else 'no process',
-            stdout=self.stdout,
-            stderr=self.stderr,
+            stdout=self.stdout[-3:],
+            stderr=self.stderr[-3:],
         )

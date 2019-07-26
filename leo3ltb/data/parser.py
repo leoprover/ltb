@@ -88,8 +88,23 @@ class Parser:
             raise ParseError()
         return m.group(1), m.group(2)
 
+    def parseEmptyOrComment(self, line):
+        # skip empty lines
+        if re.match(r'^\s*$', line):
+            return True
+
+        # skip comments
+        if re.match('% SZS', line):
+            return False
+        if line[0] == '%':
+            return True
+        return False
+
     def parseLine(self, line):
-        # 1) read comments    
+        # 1) read comments
+        if self.parseEmptyOrComment(line):
+            return
+
         # 2) parse global lines
         if self.s0 == S0_GLOBAL:
             if re.match('% SZS start BatchConfiguration', line):
@@ -98,7 +113,7 @@ class Parser:
                 self.batch = Batch()
                 return
             if line[0] == '%':
-                raise ParseError()
+                return
 
             k, v = self.parseTuple(line)
             self.ltb.data[k] = v

@@ -42,3 +42,14 @@ class Timer:
             return '{}s scheduled, started {}s ago'.format(self.startTime - self.scheduledTime, time.time() - self.startTime)
         else:
             return '{}s scheduled, {}s runned'.format(self.startTime - self.scheduledTime, self.endTime - self.startTime)
+
+class CountdownTimer:
+    def __init__(self, timeout):
+        '''
+        timeout in s
+        '''
+        self.timeout = timeout
+        self.startTime = time.time()
+
+    def timeleft(self):
+        return self.timeout - (time.time() - self.startTime)

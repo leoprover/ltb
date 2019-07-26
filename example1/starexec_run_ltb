@@ -1,0 +1,6 @@
+#!/bin/sh
+
+BATCHFILE=$1
+OUTDIR=$2
+
+python3 ltb.py $BATCHFILE $OUTDIR

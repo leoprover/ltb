@@ -1,0 +1,2 @@
+#!/bin/sh
+python3 ../ltb.py batch1 Output~ --tempdir Tmp~ --logdir Log~ --clearoutputdir

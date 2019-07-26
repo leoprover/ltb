@@ -4,7 +4,6 @@ import subprocess
 from concurrent import futures 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
 
 class Task:
     def run(self):

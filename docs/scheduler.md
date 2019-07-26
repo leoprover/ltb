@@ -4,47 +4,9 @@
 
 Implementation of a fully customizeable prove scheduler.
 
-Example Implementation:
-```
-from leo3ltb import LTB, ProblemVariant
-from leo3ltb.scheduler import ProveScheduler, Leo3SchedulerProcess
-
-class MyScheduler(ProveScheduler):
-    def onSuccess(self, problemVariant):
-        [...]
-        if [...]:
-            scheduler.prove(ProblemVariant([p], variant=[variant]), timeout=[t])
-        [...]
-
-    def onNoSuccess(self, problemVariant):
-        [...]
-
-    def onTimeout(self, problemVariant):
-        [...]
-
-    def onUserForced(self, problemVariant):
-        [...]
-
-with LTB('batches.ltb').batch(0) as batch:
-    scheduler = MyScheduler(
-        threads=3,                                  # number of threads(external processes) to used
-        schedulerProcessClass=Leo3SchedulerProcess, # Leo-III is installed as shell command 'leo3'
-        batch=batch,                                # batch of problems
-        timeout=100,                                # overall timeout
-    )
-
-    [...]
-
-    p1 = batch.problems[0]
-    scheduler.prove(ProblemVariant(p1, variant='^3'), timeout=10)
-
-    [...]
-    scheduler.wait()
-```
-
 ## ProveScheduler
 ```python
-ProveScheduler(self, *, threads, schedulerProcessClass, batch, timeout)
+ProveScheduler(self, *, threads, schedulerProcessClass, batch, timeout, withCASCStdout=True)
 ```
 
 Args:
@@ -99,49 +61,65 @@ Terminate the prove of all problemVariant of 'problem'.
 
 ### onSuccess
 ```python
-ProveScheduler.onSuccess(self, problemVariant)
+ProveScheduler.onSuccess(self, problemVariant, timeleft)
 ```
 
-Called if the prove call of 'problemVariant' is terminated with a success-szs-status.
+Called if a proverall is terminated with a success-szs-status.
+
+Args:
+* problemVariant: terminated problem variant
+* timeout left to prove the batch
 
 Needs to be overwritten.
 
 ### onNoSuccess
 ```python
-ProveScheduler.onNoSuccess(self, problemVariant)
+ProveScheduler.onNoSuccess(self, problemVariant, timeleft)
 ```
 
-Called if the prove call of 'problemVariant' is terminated with a nosuccess-szs-status.
+Called if a prove call is terminated with a nosuccess-szs-status.
+
+Args:
+* problemVariant: terminated problem variant
+* timeout left to prove the batch
 
 Needs to be overwritten.
 
 ### onTimeout
 ```python
-ProveScheduler.onTimeout(self, problemVariant)
+ProveScheduler.onTimeout(self, problemVariant, timeleft)
 ```
 
-Called if the prove call of 'problemVariant' is either:
+Called if a prove call is either:
 1. terminated with the szs-status 'Timeout', then:
     - problemVariant.schedulerStatus == 'ProcessTimeout'
 2. the process run into a timeout is was killed by python, then:
     - problemVariant.schedulerStatus == 'Completed'
 
+Args:
+* problemVariant: terminated problem variant
+* timeout left to prove the batch
+
 Needs to be overwritten.
 
 ### onUserForced
 ```python
-ProveScheduler.onUserForced(self, problemVariant)
+ProveScheduler.onUserForced(self, problemVariant, timeleft)
 ```
 
-Called if the prove call is terminated by the scheduler using one of
+Called if a prove call is terminated by the scheduler, using one of
 * terminate(problemVariant)
 * terminateProblemVariants(problem)
+
+Args:
+* problemVariant: terminated problem variant
+* timeout left to prove the batch
 
 Needs to be overwritten.
 
 ## Leo3SchedulerProcess
 ```python
-Leo3SchedulerProcess(self, problemVariant, *, timeout)
+Leo3SchedulerProcess(self, problemVariant, problemFile, *, timeout)
 ```
 
 If you are using the Leo-III theorem prover using the default shell command 'leo3' use this implementation.
@@ -149,7 +127,7 @@ Otherwise use a custom implementation of 'ProveSchedulerProcess'
 
 ## ProveSchedulerProcess
 ```python
-ProveSchedulerProcess(self, problemVariant, *, timeout)
+ProveSchedulerProcess(self, problemVariant, problemFile, *, timeout)
 ```
 
 Process runned by the Scheduler to prove a [problemVariant](problem.md).

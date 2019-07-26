@@ -1,0 +1,14 @@
+division.category LTB.Test1
+division.category.training_data nodata.tgz
+% SZS start BatchConfiguration
+execution.order unordered
+output.required Proof
+limit.time.problem.wc 0
+limit.time.overall.wc 450
+% SZS end BatchConfiguration
+% SZS start BatchIncludes
+include('Axioms/HL4001*.ax').
+% SZS end BatchIncludes
+% SZS start BatchProblems
+Problems/polyerror*.p polyerror
+% SZS end BatchProblems

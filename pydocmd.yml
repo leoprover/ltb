@@ -5,10 +5,18 @@ site_name: "LTB support for Leo-III"
 # is a tree of Python member names (modules, classes, etc.) that should be
 # documented. Higher indentation leads to smaller header size.
 generate:
-- problem.md:
+- data.md:
   - leo3ltb.data.problem:
     - leo3ltb.data.problem.Problem+
     - leo3ltb.data.problem.ProblemVariant+
+- executable.md:
+  - leo3ltb.executable:
+    - leo3ltb.executable.parse_args+
+    - leo3ltb.executable.batch_from_args+
+- context.md:
+  - leo3ltb.context:
+    - leo3ltb.context.processBatch+
+    - leo3ltb.context.LTBBatchContext+
 - scheduler.md:
   - leo3ltb.scheduler:
     - leo3ltb.scheduler.scheduler
@@ -23,8 +31,10 @@ generate:
 pages:
 - Home: index.md
 - Proving:
-  - Problem: problem.md
-  - ProveScheduler: scheduler.md
+  - leo3ltb.executable: executable.md
+  - leo3ltb.context: context.md
+  - leo3ltb.data: data.md
+  - leo3ltb.scheduler: scheduler.md
 
 # These options all show off their default values. You don't have to add
 # them to your configuration if you're fine with the default.
