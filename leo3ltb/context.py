@@ -34,11 +34,12 @@ class processBatch:
     Create a log, output and tmp dir.
 
     Returns:
-    * LTBBatchContext object a scope. It may be used as
+    * LTBBatchContext, a scope object. It may be used as
     ```
     with leo3ltb.processBatch(...) as batch:
         [...] # do something with the batch
     ```
+    @see LTBBatchContext below.
     '''
     def __init__(self, batchDefinition, *, outdir='', tempdir='', logdir='', clearoutputdir=False):
         self.definition = batchDefinition
@@ -130,8 +131,8 @@ class LTBBatchContext:
                 try:
                     with open(i, "r") as f:
                         out.write(f.read())
-                except:
-                    FileNotFoundError()
+                except FileNotFoundError:
+                    pass
 
             with open(problemFile, "r") as f:
                 out.write(f.read())

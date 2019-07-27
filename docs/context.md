@@ -9,11 +9,12 @@ Gets a batch context to process a batch.
 Create a log, output and tmp dir.
 
 Returns:
-* LTBBatchContext object a scope. It may be used as
+* LTBBatchContext, a scope object. It may be used as
 ```
 with leo3ltb.processBatch(...) as batch:
     [...] # do something with the batch
 ```
+@see LTBBatchContext below.
 
 ## LTBBatchContext
 ```python
