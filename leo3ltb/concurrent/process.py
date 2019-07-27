@@ -129,13 +129,13 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
     * instance.submit(process, timeout) to queue a process for executing
     * instance.wait() to wait for the termination of all submitted processes
     * instance.terminateProcess(process) to manually terminate a process
-    * onProcessCompleted(self, process, stdout, stderr) needs to be overloaded
+    * onProcessCompleted(self, process, stdout, stderr) needs to be overwritten
       - is call iff the process finisched. 
       - gets "stdout" and "stderr" of the process.
-    * onProcessTimeout(self, process, stdout, stderr) needs to be overloaded
+    * onProcessTimeout(self, process, stdout, stderr) needs to be overwritten
       - is call iff the process is finished by a timeout. 
       - gets "stdout" and "stderr" of the process.
-    * onProcessForcedTerminated(self, process, stdout, stderr) needs to be overloaded
+    * onProcessForcedTerminated(self, process, stdout, stderr) needs to be overwritten
       - is call iff the process is terminated by a call of instance.terminate(process) 
       - gets "stdout" and "stderr" of the process.
     '''

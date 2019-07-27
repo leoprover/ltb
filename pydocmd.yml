@@ -7,6 +7,7 @@ site_name: "LTB support for Leo-III"
 generate:
 - data.md:
   - leo3ltb.data.problem:
+    - leo3ltb.data.ltb++
     - leo3ltb.data.problem.Problem+
     - leo3ltb.data.problem.ProblemVariant+
 - executable.md:

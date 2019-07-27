@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class ProveSchedulerProcess(Process):
     '''
-    Process runned by the Scheduler to prove a [problemVariant](problem.md).
+    Process runned by the Scheduler to prove a [problemVariant](data.md).
     '''
     def __init__(self, problemVariant, problemFile, *, timeout):
         self.problemVariant = problemVariant
@@ -62,18 +62,28 @@ class ProveScheduler(ThreadProcessExecuter):
         - ..
     * schedulerProcessClass: use you class implementing SchedulerProcess. If you are using Leo-III you may use 'Leo3SchedulerProcess'
     '''
-    def __init__(self, *, threads, schedulerProcessClass, batch, timeout, withCASCStdout=True):
+    def __init__(self, *, 
+        threads, 
+        schedulerProcessClass, 
+        batch, 
+        overallTimeout,
+        problemTimeout=None, 
+        withCASCStdout=True,
+    ):
         super(ProveScheduler, self).__init__(threads=threads)
         self.batch = batch
         self.noSuccessProblems = batch.definition.problems
         self.successProblems = []
         self.scheduleHistory = []
         self.finishHistory = [] 
-        self.timeout = timeout
+        
+        self.overallTimeout = overallTimeout
+        self.problemTimeout = problemTimeout
+
         self.schedulerProcessClass = schedulerProcessClass
         self.withCASCStdout = withCASCStdout
 
-        self.timer = CountdownTimer(timeout)
+        self.timer = CountdownTimer(overallTimeout)
 
     def status(self):
         '''
@@ -151,6 +161,25 @@ class ProveScheduler(ThreadProcessExecuter):
         for key, problemVariant in problem.variants.items():
             self.terminate(problemVariant)
 
+    def getProblemTimeUsed(self, problem):
+        '''
+        Returns:
+        * The time the problem has used for running overall.
+        '''
+        t = 0
+        for key, problemVariant in problem.variants.items():
+            t += problemVariant.process.timer.getTimeRunning()
+        return t
+
+    def getProblemTimeLeft(self, problem):
+        '''
+        Returns:
+        * The time the problem has left for running.
+        '''
+        if self.problemTimeout is None:
+            return None
+        return self.problemTimeout - self.getProblemTimeUsed(problem)
+
     # implementing ThreadProcessExecuter.onProcessCompleted
     def onProcessCompleted(self, process, stdout, stderr):
         problemVariant = process.problemVariant
@@ -180,9 +209,9 @@ class ProveScheduler(ThreadProcessExecuter):
 
         self._cleanupProve(problemVariant, alreadySuccessfull=wasAlreadySuccessfull)
         if(problemVariant.isSuccessful()):
-            self.onSuccess(problemVariant, self.timer.timeleft())
+            self.onSuccess(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
         else:
-            self.onNoSuccess(problemVariant, self.timer.timeleft())
+            self.onNoSuccess(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
 
     # implementing ThreadProcessExecuter.onProcessTimeout
     def onProcessTimeout(self, process, stdout, stderr):
@@ -199,7 +228,7 @@ class ProveScheduler(ThreadProcessExecuter):
         logger.debug(format.red('onTimeout {}').format(problemVariant))
         
         self._cleanupProve(problemVariant, alreadySuccessfull=wasAlreadySuccessfull)
-        self.onTimeout(problemVariant, self.timer.timeleft())
+        self.onTimeout(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
 
     # implementing ThreadProcessExecuter.onProcessForcedTerminated
     def onProcessForcedTerminated(self, process, stdout, stderr):
@@ -215,33 +244,35 @@ class ProveScheduler(ThreadProcessExecuter):
         logger.debug(format.red('onUserForced {}').format(problemVariant))
 
         self._cleanupProve(problemVariant, alreadySuccessfull=wasAlreadySuccessfull)
-        self.onUserForced(problemVariant, self.timer.timeleft())
+        self.onUserForced(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
 
-    def onSuccess(self, problemVariant, timeleft):
+    def onSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
         '''
         Called if a proverall is terminated with a success-szs-status.
 
         Args:
         * problemVariant: terminated problem variant
-        * timeout left to prove the batch
+        * overallTimeleft time left to prove the batch
+        * problemTimeleft time left to prove the problem
 
         Needs to be overwritten.
         '''
         NotImplementedError()
 
-    def onNoSuccess(self, problemVariant, timeleft):
+    def onNoSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
         '''
         Called if a prove call is terminated with a nosuccess-szs-status.
 
         Args:
         * problemVariant: terminated problem variant
-        * timeout left to prove the batch
+        * overallTimeleft time left to prove the batch
+        * problemTimeleft time left to prove the problem
 
         Needs to be overwritten.
         '''
         NotImplementedError()
 
-    def onTimeout(self, problemVariant, timeleft):
+    def onTimeout(self, problemVariant, overallTimeleft, problemTimeleft):
         '''
         Called if a prove call is either:
         1. terminated with the szs-status 'Timeout', then:
@@ -251,13 +282,14 @@ class ProveScheduler(ThreadProcessExecuter):
 
         Args:
         * problemVariant: terminated problem variant
-        * timeout left to prove the batch
+        * overallTimeleft time left to prove the batch
+        * problemTimeleft time left to prove the problem
 
         Needs to be overwritten.
         '''
         NotImplementedError()
 
-    def onUserForced(self, problemVariant, timeleft):
+    def onUserForced(self, problemVariant, overallTimeleft, problemTimeleft):
         '''
         Called if a prove call is terminated by the scheduler, using one of
         * terminate(problemVariant)
@@ -265,7 +297,8 @@ class ProveScheduler(ThreadProcessExecuter):
 
         Args:
         * problemVariant: terminated problem variant
-        * timeout left to prove the batch
+        * overallTimeleft time left to prove the batch
+        * problemTimeleft time left to prove the problem
 
         Needs to be overwritten.
         '''

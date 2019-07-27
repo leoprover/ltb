@@ -1,6 +1,17 @@
 from ..tptp.szsStatus import SZS_STATUS
 
 class Problem:
+    '''
+    LTB Problem
+
+    * filePattern: the pattern of problem files for this problem, usally something like 'Problems/HL400001*.p', * is a placeholder 
+      for the variant of the problem, @see ProblemVariant
+    * output: the name of the outfile for the problem
+    * variants: a dictionary of problem variantes for the problem. 
+      Keys are a variant identifiers like '^1', '^3', '1'
+      Values are ProblemVariant instances
+    * successfulVariant: first found variant which proves the problem
+    '''
     def __init__(self, filePattern, output):
         self.filePattern = filePattern
         self.output = output
@@ -8,9 +19,15 @@ class Problem:
         self.successfulVariant = None
 
     def isSuccessful(self):
+        '''
+        Whether a prove for this problem was successful.
+        '''
         return self.successfulVariant is not None
 
     def getOutfile(self):
+        '''
+        Output filename of the problem.
+        '''
         return self.output
 
     def __str__(self):
@@ -27,6 +44,16 @@ class Problem:
         )
 
 class ProblemVariant:
+    '''
+    LTB problem variant.
+
+    * problem: the problem the variant belongs to
+    * variant: the variant identifier 
+    * szsStatus: the szsStatus of the problem variant
+    * stdout: the stdout of the prove attempt of the problem variant
+    * stderr: the stdout of the prove attempt of the problem variant
+    * process: the process which is/was used to prove the problem variant
+    '''
     def __init__(self, problem, *, variant):
         self.problem = problem
         # back reference
@@ -41,17 +68,23 @@ class ProblemVariant:
 
     def getProblemFile(self):
         '''
-        get the accual problem file
-        'Problems/HL400001*.p' with variant '^3' -> 'Problems/HL400001^3.p'
+        The accual problem definition file.
+        FilePattern 'Problems/HL400001*.p' with variant '^3' -> 'Problems/HL400001^3.p'
         '''
         problemFile = self.problem.filePattern.replace('*', self.variant)
         return problemFile
 
     def getOutfile(self):
+        '''
+        Output filename of the problem variant. 
+        '''
         outputFile = self.problem.output + self.variant
         return outputFile
 
     def isSuccessful(self):
+        '''
+        Whether a prove for this problem variant was successful.
+        '''
         return SZS_STATUS.isSuccess(self.szsStatus)
 
     def __str__(self):

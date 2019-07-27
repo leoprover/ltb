@@ -6,7 +6,7 @@ Implementation of a fully customizeable prove scheduler.
 
 ## ProveScheduler
 ```python
-ProveScheduler(self, *, threads, schedulerProcessClass, batch, timeout, withCASCStdout=True)
+ProveScheduler(self, *, threads, schedulerProcessClass, batch, overallTimeout, problemTimeout=None, withCASCStdout=True)
 ```
 
 Args:
@@ -59,35 +59,53 @@ ProveScheduler.terminateProblemVariants(self, problem)
 
 Terminate the prove of all problemVariant of 'problem'.
 
+### getProblemTimeUsed
+```python
+ProveScheduler.getProblemTimeUsed(self, problem)
+```
+
+Returns:
+* The time the problem has used for running overall.
+
+### getProblemTimeLeft
+```python
+ProveScheduler.getProblemTimeLeft(self, problem)
+```
+
+Returns:
+* The time the problem has left for running.
+
 ### onSuccess
 ```python
-ProveScheduler.onSuccess(self, problemVariant, timeleft)
+ProveScheduler.onSuccess(self, problemVariant, overallTimeleft, problemTimeleft)
 ```
 
 Called if a proverall is terminated with a success-szs-status.
 
 Args:
 * problemVariant: terminated problem variant
-* timeout left to prove the batch
+* overallTimeleft time left to prove the batch
+* problemTimeleft time left to prove the problem
 
 Needs to be overwritten.
 
 ### onNoSuccess
 ```python
-ProveScheduler.onNoSuccess(self, problemVariant, timeleft)
+ProveScheduler.onNoSuccess(self, problemVariant, overallTimeleft, problemTimeleft)
 ```
 
 Called if a prove call is terminated with a nosuccess-szs-status.
 
 Args:
 * problemVariant: terminated problem variant
-* timeout left to prove the batch
+* overallTimeleft time left to prove the batch
+* problemTimeleft time left to prove the problem
 
 Needs to be overwritten.
 
 ### onTimeout
 ```python
-ProveScheduler.onTimeout(self, problemVariant, timeleft)
+ProveScheduler.onTimeout(self, problemVariant, overallTimeleft, problemTimeleft)
 ```
 
 Called if a prove call is either:
@@ -98,13 +116,14 @@ Called if a prove call is either:
 
 Args:
 * problemVariant: terminated problem variant
-* timeout left to prove the batch
+* overallTimeleft time left to prove the batch
+* problemTimeleft time left to prove the problem
 
 Needs to be overwritten.
 
 ### onUserForced
 ```python
-ProveScheduler.onUserForced(self, problemVariant, timeleft)
+ProveScheduler.onUserForced(self, problemVariant, overallTimeleft, problemTimeleft)
 ```
 
 Called if a prove call is terminated by the scheduler, using one of
@@ -113,7 +132,8 @@ Called if a prove call is terminated by the scheduler, using one of
 
 Args:
 * problemVariant: terminated problem variant
-* timeout left to prove the batch
+* overallTimeleft time left to prove the batch
+* problemTimeleft time left to prove the problem
 
 Needs to be overwritten.
 
@@ -130,7 +150,7 @@ Otherwise use a custom implementation of 'ProveSchedulerProcess'
 ProveSchedulerProcess(self, problemVariant, problemFile, *, timeout)
 ```
 
-Process runned by the Scheduler to prove a [problemVariant](problem.md).
+Process runned by the Scheduler to prove a [problemVariant](data.md).
 
 ### generateProverCall
 ```python

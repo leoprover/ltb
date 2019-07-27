@@ -33,6 +33,13 @@ class Timer:
             raise Exception(self.endTime)
         self.endTime = time.time()
 
+    def getTimeRunning(self):
+        if self.endTime:
+            if self.startTime is None:
+                raise Exception(self.startTime)
+            return self.endTime - self.startTime
+        return time.time() - self.endTime
+
     def __str__(self):
         if self.scheduledTime is None:
             return 'Not yet scheduled'

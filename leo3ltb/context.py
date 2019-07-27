@@ -19,15 +19,12 @@ class StaticDirectory:
         Removes all content form the dictionary.
         '''
         for file_object in os.listdir(self.name):
-            try:
-                file_object_path = os.path.join(self.name, file_object)
-                if os.path.isfile(file_object_path):
-                    os.unlink(file_object_path)
-                else:
-                    shutil.rmtree(file_object_path)
-            except:
-                pass
-
+            file_object_path = os.path.join(self.name, file_object)
+            if os.path.isfile(file_object_path):
+                os.unlink(file_object_path)
+            else:
+                shutil.rmtree(file_object_path)
+        
     def cleanup(self):
         return
 
@@ -60,7 +57,7 @@ class processBatch:
 
         if self.logdir:
             logDirectory = StaticDirectory(self.logdir)
-            tempDirectory.removeContent()
+            logDirectory.removeContent()
         else:
             logDirectory = tempfile.TemporaryDirectory()
 
