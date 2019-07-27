@@ -49,12 +49,6 @@ class MyScheduler(ProveScheduler):
         logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {}').format(problemVariant, overallTimeleft, problemTimeleft))
         logger.debug('\n'+self.status())
 
-        problem = problemVariant.problem
-        if problemVariant.variant == '^3':
-            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=10)
-        if problemVariant.variant == '^1':
-            scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=10)
-
 args = leo3ltb.parse_args()
 with leo3ltb.batch_from_args(args) as batch:
     #threading.logger.addHandler(batch.log)
