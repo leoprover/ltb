@@ -50,7 +50,7 @@ class Leo3SchedulerProcess(ProveSchedulerProcess):
     Otherwise use a custom implementation of 'ProveSchedulerProcess'
     '''
     def generateProverCall(self, problemFile, timeout):
-        return ['leo3', problemFile, '-t', timeout]
+        return ['leo3', problemFile, '-t', int(timeout)]
 
 class ProveScheduler(ThreadProcessExecuter):
     '''
@@ -177,8 +177,6 @@ class ProveScheduler(ThreadProcessExecuter):
         Returns:
         * The time the problem has left for running.
         '''
-        if self.problemTimeout is None:
-            return None
         return self.problemTimeout - self.getProblemTimeUsed(problem)
 
     # implementing ThreadProcessExecuter.onProcessCompleted

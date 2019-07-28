@@ -1,4 +1,5 @@
 import re
+import math
 
 class LTB:
     '''
@@ -37,8 +38,8 @@ class BatchConfig():
         '''
         t = self._dict.get('limit.time.overall.wc', '0')
         if t == '0':
-            return None
-        return int(t)
+            return math.inf
+        return float(t)
 
     def problemTimeout(self):
         '''
@@ -51,8 +52,8 @@ class BatchConfig():
         '''
         t = self._dict.get('limit.time.problem.wc', '0')
         if t == '0':
-            return None
-        return int(t)
+            return math.inf
+        return float(t)
 
     def get(self, k, default):
         return self._dict.get(k, default)
