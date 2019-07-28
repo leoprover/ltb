@@ -152,6 +152,32 @@ class LTBBatchContext:
 
         augmentedIncludes = []
         for i in self.definition.includes:
+            file = i.replace('*', problemVariant.variant)
+            augmentedIncludes.append(file)
+
+        with temp as out:
+            for i in augmentedIncludes:
+                out.write(i)
+                out.write('\n')
+
+            with open(problemFile, "r") as f:
+                out.write(f.read())
+
+        return temp.name
+
+    def augmentProblemVariantWithCpy(self, problemVariant):
+        '''
+        Augment a problem file by its variant and adding all imports from its batch 
+        definition by opening the imported files and copy their content.
+        '''
+        problemFile = problemVariant.getProblemFile()
+
+        # create tmp file with same name directly in temp folder
+        problemFilename = pathlib.Path(problemFile).name
+        temp = self.tempfile(problemFilename, 'w')
+
+        augmentedIncludes = []
+        for i in self.definition.includes:
             match = re.match(r'include\([\'\"](.+)[\'\"]\)\.', i)
             file = match.group(1)
             file = file.replace('*', problemVariant.variant)

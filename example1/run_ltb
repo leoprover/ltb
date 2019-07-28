@@ -1,2 +1,5 @@
 #!/bin/sh
+
+# export to let leo know where import files are
+export TPTP=.
 python3 ../ltb.py batch1 Output~ --tempdir Tmp~ --logdir Log~ --clearoutputdir

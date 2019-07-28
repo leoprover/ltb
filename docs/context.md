@@ -66,3 +66,11 @@ LTBBatchContext.augmentProblemVariant(self, problemVariant)
 
 Augment a problem file by its variant and adding all imports from its batch definition.
 
+### augmentProblemVariantWithCpy
+```python
+LTBBatchContext.augmentProblemVariantWithCpy(self, problemVariant)
+```
+
+Augment a problem file by its variant and adding all imports from its batch
+definition by opening the imported files and copy their content.
+

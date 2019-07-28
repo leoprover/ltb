@@ -1,4 +1,3 @@
-include('Axioms/HL4001^2.ax').
 thf(tp_c_2Ebool_2E_2F_5C,type,(
     c_2Ebool_2E_2F_5C: $i )).
 
