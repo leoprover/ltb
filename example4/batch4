@@ -1,0 +1,16 @@
+division.category LTB.Test4
+division.category.training_data nodata.tgz
+% SZS start BatchConfiguration
+execution.order unordered
+output.required Proof
+limit.time.problem.wc 0
+limit.time.overall.wc 450
+% SZS end BatchConfiguration
+% SZS start BatchIncludes
+% SZS end BatchIncludes
+% SZS start BatchProblems
+Problems/error*.p error
+Problems/gaveup*.p gaveup
+Problems/theorem*.p theorem
+Problems/timeout*.p timeout
+% SZS end BatchProblems
