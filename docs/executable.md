@@ -47,3 +47,15 @@ with leo3ltb.processBatch(args) as batch:
     [...] # do something with the batch
 ```
 
+## batches_from_args
+```python
+batches_from_args(args)
+```
+
+Returns:
+* [LTBBatchContext object](context.md). It may be used as
+```
+with leo3ltb.processBatch(args) as batch:
+    [...] # do something with the batch
+```
+

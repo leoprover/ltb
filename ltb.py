@@ -50,23 +50,24 @@ class MyScheduler(ProveScheduler):
         logger.debug('\n'+self.status())
 
 args = leo3ltb.parse_args()
-with leo3ltb.batch_from_args(args) as batch:
-    #threading.logger.addHandler(batch.log)
-    #process.logger.addHandler(batch.log)
-    #scheduler.logger.addHandler(batch.log)
-    logger.addHandler(batch.log)
+with leo3ltb.batches_from_args(args) as batches:
+    for batch in batches:
+        #threading.logger.addHandler(batch.log)
+        #process.logger.addHandler(batch.log)
+        #scheduler.logger.addHandler(batch.log)
+        logger.addHandler(batch.log)
 
-    assert batch.definition.config.get('execution.order', None)=='unordered'
+        assert batch.definition.config.get('execution.order', None)=='unordered'
 
-    scheduler = MyScheduler( 
-        threads=3,
-        schedulerProcessClass=Leo3SchedulerProcess,
-        batch=batch,
-        overallTimeout=batch.definition.config.overallTimeout(),
-        problemTimeout=batch.definition.config.problemTimeout(),
-    )
+        scheduler = MyScheduler( 
+            threads=3,
+            schedulerProcessClass=Leo3SchedulerProcess,
+            batch=batch,
+            overallTimeout=batch.definition.config.overallTimeout(),
+            problemTimeout=batch.definition.config.problemTimeout(),
+        )
 
-    for problem in batch.definition.problems:
-        scheduler.prove(ProblemVariant(problem, variant='^3'), timeout=10)
+        for problem in batch.definition.problems:
+            scheduler.prove(ProblemVariant(problem, variant='^3'), timeout=10)
 
-    scheduler.wait()
+        scheduler.wait()

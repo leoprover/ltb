@@ -16,6 +16,23 @@ with leo3ltb.processBatch(...) as batch:
 ```
 @see LTBBatchContext below.
 
+## processBatches
+```python
+processBatches(self, batchDefinitions, *, outdir='', tempdir='', logdir='', clearoutputdir=False)
+```
+
+Gets a batch context for each batch to process.
+Create a log, output and tmp dir for each batch.
+
+Returns:
+* a list of LTBBatchContext, a list of scope object. It may be used as
+```
+with leo3ltb.processBatch(...) as batches:
+    for batch in batches
+        [...] # do something with the batch
+```
+@see LTBBatchContext below.
+
 ## LTBBatchContext
 ```python
 LTBBatchContext(self, *, definition, outdir, tempdir, logdir)

@@ -1,8 +1,6 @@
-# leo3ltb.data.problem
+# leo3ltb.data.ltb
 
-## leo3ltb.data.ltb
-
-### LTB
+## LTB
 ```python
 LTB(self)
 ```
@@ -12,7 +10,7 @@ Overall LTB definition.
 * data: dictionary of overall data of the ltb
 * batches: list of Batch instances
 
-### BatchConfig
+## BatchConfig
 ```python
 BatchConfig(self)
 ```
@@ -20,7 +18,7 @@ BatchConfig(self)
 Act like a dictionary containing all config attributes.
 As special additional subparsers for specific config attributes.
 
-#### overallTimeout
+### overallTimeout
 ```python
 BatchConfig.overallTimeout(self)
 ```
@@ -32,7 +30,7 @@ Returns:
 * if 'limit.time.overall.wc' is 0, None is returned
 * if 'limit.time.overall.wc' is not defined, None is returned
 
-#### problemTimeout
+### problemTimeout
 ```python
 BatchConfig.problemTimeout(self)
 ```
@@ -44,7 +42,7 @@ Returns:
 * if 'limit.time.problem.wc' is 0, None is returned
 * if 'limit.time.problem.wc' is not defined, None is returned
 
-### Batch
+## Batch
 ```python
 Batch(self)
 ```
@@ -54,6 +52,8 @@ An LTB batch.
 * config: the batch BatchConfig instance of the batch
 * inclides: a list of include lines for all problems
 * problem: the list of problems of the batch
+
+# leo3ltb.data.problem
 
 ## Problem
 ```python

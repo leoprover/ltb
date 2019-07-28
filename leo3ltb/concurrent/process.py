@@ -58,7 +58,8 @@ class Process:
         @TODO: SIGKILL does not work on windows, use signal.SIGTERM
         '''
         # @see https://stackoverflow.com/questions/4789837/how-to-terminate-a-python-subprocess-launched-with-shell-true
-        os.killpg(os.getpgid(self._process.pid), signal.SIGKILL)  # Send the signal to all the process groups
+        #os.killpg(os.getpgid(self._process.pid), signal.SIGKILL)  # Send the signal to all the process groups
+        os.killpg(os.getpgid(self._process.pid), signal.SIGTERM)  # Send the signal to all the process groups
 
     def isRunning(self):
         return self._isRunning

@@ -6,17 +6,19 @@ site_name: "LTB support for Leo-III"
 # documented. Higher indentation leads to smaller header size.
 generate:
 - data.md:
+  - leo3ltb.data.ltb++
   - leo3ltb.data.problem:
-    - leo3ltb.data.ltb++
     - leo3ltb.data.problem.Problem+
     - leo3ltb.data.problem.ProblemVariant+
 - executable.md:
   - leo3ltb.executable:
     - leo3ltb.executable.parse_args+
     - leo3ltb.executable.batch_from_args+
+    - leo3ltb.executable.batches_from_args+
 - context.md:
   - leo3ltb.context:
     - leo3ltb.context.processBatch+
+    - leo3ltb.context.processBatches+
     - leo3ltb.context.LTBBatchContext+
 - scheduler.md:
   - leo3ltb.scheduler:

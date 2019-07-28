@@ -146,7 +146,8 @@ class ProveScheduler(ThreadProcessExecuter):
         if not problemVariant.process.isRunning():
             return False
 
-        problemVariant.szsStatus = 'User'
+        # problemVariant.szsStatus = 'User'
+        problemVariant.szsStatus = 'Forced'
         process = problemVariant.process
         
         process.terminate()
@@ -239,8 +240,8 @@ class ProveScheduler(ThreadProcessExecuter):
         problemVariant.stdout = stdout
         problemVariant.stderr = stderr
 
+        assert problemVariant.szsStatus == 'Forced'
         problemVariant.schedulerStatus = 'ForcedTermination'
-
         logger.debug(format.red('onUserForced {}').format(problemVariant))
 
         self._cleanupProve(problemVariant, alreadySuccessfull=wasAlreadySuccessfull)

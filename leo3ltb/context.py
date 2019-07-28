@@ -28,6 +28,37 @@ class StaticDirectory:
     def cleanup(self):
         return
 
+class processBatches:
+    '''
+    Gets a batch context for each batch to process.
+    Create a log, output and tmp dir for each batch.
+
+    Returns:
+    * a list of LTBBatchContext, a list of scope object. It may be used as
+    ```
+    with leo3ltb.processBatch(...) as batches:
+        for batch in batches
+            [...] # do something with the batch
+    ```
+    @see LTBBatchContext below.
+    '''
+    def __init__(self, batchDefinitions, *, outdir='', tempdir='', logdir='', clearoutputdir=False):
+        self.batches = []
+        for i, b in enumerate(batchDefinitions):
+            self.batches.append(processBatch(b, 
+                outdir=outdir, 
+                tempdir=tempdir+str(i), 
+                logdir=logdir+str(i), 
+                clearoutputdir=clearoutputdir
+            ))
+
+    def __enter__(self):
+        return list(map(lambda v: v.__enter__(),self.batches))
+
+    def __exit__(self, type, value, traceback):
+        for b in self.batches:
+            b.__exit__(type, value, traceback)
+
 class processBatch:
     '''
     Gets a batch context to process a batch.

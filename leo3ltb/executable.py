@@ -30,7 +30,7 @@ optional arguments:
 
 import argparse
 
-from .context import processBatch
+from .context import processBatch, processBatches
 from .data import parseFile
 
 def parse_args():
@@ -74,3 +74,21 @@ def batch_from_args(args):
         logdir=args.logdir,
         clearoutputdir=args.clearoutputdir,
     )
+
+def batches_from_args(args):
+    '''
+    Returns:
+    * [LTBBatchContext object](context.md). It may be used as
+    ```
+    with leo3ltb.processBatch(args) as batch:
+        [...] # do something with the batch
+    ```
+    '''
+    ltb = parseFile(args.batch)
+    return processBatches(ltb.batches, 
+        tempdir=args.tempdir, 
+        outdir=args.outdir,
+        logdir=args.logdir,
+        clearoutputdir=args.clearoutputdir,
+    )
+
