@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 import logging
 import leo3ltb 
@@ -30,6 +31,7 @@ class MyScheduler(ProveScheduler):
 
         # TODO? break if we found a countermodel an such?
         problem = problemVariant.problem
+
         if problemVariant.variant == '^3':
             scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=10)
         if problemVariant.variant == '^1':
@@ -40,6 +42,7 @@ class MyScheduler(ProveScheduler):
         logger.debug('\n'+self.status())
 
         problem = problemVariant.problem
+
         if problemVariant.variant == '^3':
             scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=10)
         if problemVariant.variant == '^1':
@@ -68,6 +71,6 @@ with leo3ltb.batches_from_args(args) as batches:
         )
 
         for problem in batch.definition.problems:
-            scheduler.prove(ProblemVariant(problem, variant='^3'), timeout=10)
-
+            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=10)
+            
         scheduler.wait()
