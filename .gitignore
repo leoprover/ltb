@@ -49,8 +49,8 @@ coverage.xml
 *.txt.py
 *.html.py
 
-# misc
-*~
+# batch outputs, logs and such
+*~*
 
 # docs
 .docs-html/
