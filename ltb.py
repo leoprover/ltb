@@ -33,7 +33,8 @@ class MyScheduler(ProveScheduler):
         problem = problemVariant.problem
 
         if problemVariant.variant == '^3':
-            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=10)
+            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=40)
+        return
         if problemVariant.variant == '^1':
             scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=10)
 
@@ -44,7 +45,8 @@ class MyScheduler(ProveScheduler):
         problem = problemVariant.problem
 
         if problemVariant.variant == '^3':
-            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=10)
+            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=40)
+        return
         if problemVariant.variant == '^1':
             scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=10)
 
@@ -71,6 +73,6 @@ with leo3ltb.batches_from_args(args) as batches:
         )
 
         for problem in batch.definition.problems:
-            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=10)
+            scheduler.prove(ProblemVariant(problem, variant='^3'), timeout=40)
             
         scheduler.wait()

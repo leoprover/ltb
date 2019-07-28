@@ -152,8 +152,14 @@ class LTBBatchContext:
 
         augmentedIncludes = []
         for i in self.definition.includes:
-            file = i.replace('*', problemVariant.variant)
-            augmentedIncludes.append(file)
+            include_line = i.replace('*', problemVariant.variant)
+
+            match = re.match(r'include\([\'\"](.+)[\'\"]\)\.', i)
+            filename = match.group(1)
+            filename = filename.replace('*', problemVariant.variant)
+
+            if os.path.exists(filename):
+                augmentedIncludes.append(include_line)
 
         with temp as out:
             for i in augmentedIncludes:
