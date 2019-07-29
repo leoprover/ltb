@@ -318,6 +318,11 @@ class ProveScheduler(ThreadProcessExecuter):
             for line in problemVariant.stdout:
                 out.write(line)
                 if line != '': out.write('\n')
+
+        with self.batch.logfile(problemVariant.getErrfile(), 'w') as out:
+            for line in problemVariant.stderr:
+                out.write(line)
+                if line != '': out.write('\n')
         
         self.finishHistory.append(problemVariant)
 

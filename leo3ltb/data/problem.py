@@ -78,7 +78,14 @@ class ProblemVariant:
         '''
         Output filename of the problem variant. 
         '''
-        outputFile = self.problem.output + self.variant
+        outputFile = self.problem.output + self.variant + '.out'
+        return outputFile
+
+    def getErrfile(self):
+        '''
+        Output filename of the problem variant. 
+        '''
+        outputFile = self.problem.output + self.variant + '.err'
         return outputFile
 
     def isSuccessful(self):
