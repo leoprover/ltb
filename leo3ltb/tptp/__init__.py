@@ -9,21 +9,20 @@ def getSZSStatusOfLine(line):
     '''
     match = re.match(r'^% SZS status ([^\s]+)', line)
     if not match:
-        None
+        return None
     return match[1]
 
 def getSZSStatus(lines):
+    '''
+    @TODO optimize this? Going in reverse order? Introduce a whole result parser?
+    '''
     # no output found
     if len(lines) < 1:
         return 'Error'
 
-    lastLine = lines[-1]
-    if lastLine == '':
-        if len(lines) < 2:
-            return 'Error'
-        lastLine = lines[-2]
+    for line in lines:
+        status = getSZSStatusOfLine(line)
+        if status is not None:
+            return status
 
-    status = getSZSStatusOfLine(lastLine)
-    if not status:
-        return 'Error'
-    return status
+    return 'Error'
