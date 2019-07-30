@@ -142,6 +142,8 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
     * onProcessForcedTerminated(self, process, stdout, stderr) needs to be overwritten
       - is call iff the process is terminated by a call of instance.terminate(process) 
       - gets "stdout" and "stderr" of the process.
+    * onProcessStart(process) needs to be overloaded
+      - is called directly before the process is actual started in a thread
     '''
 
     def __init__(self, **kwargs):

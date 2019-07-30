@@ -31,6 +31,13 @@ ProveScheduler.scheduledProblemVariants(self)
 
 Get all problem variants which are enqueued.
 
+### activeProblemVariants
+```python
+ProveScheduler.activeProblemVariants(self)
+```
+
+Get all problem variants which are enqueued.
+
 ### runningProblemVariants
 ```python
 ProveScheduler.runningProblemVariants(self)
@@ -137,9 +144,23 @@ Args:
 
 Needs to be overwritten.
 
+### onStart
+```python
+ProveScheduler.onStart(self, problemVariant, overallTimeleft, problemTimeleft)
+```
+
+Called if a prove call is started by the scheduler.
+
+Args:
+* problemVariant: terminated problem variant
+* overallTimeleft time left to prove the batch
+* problemTimeleft time left to prove the problem
+
+Needs to be overwritten.
+
 ## Leo3SchedulerProcess
 ```python
-Leo3SchedulerProcess(self, problemVariant, problemFile, *, timeout)
+Leo3SchedulerProcess(self, problemVariant, problemFile, *, timeout, withCASCStdout)
 ```
 
 If you are using the Leo-III theorem prover using the default shell command 'leo3' use this implementation.
@@ -147,7 +168,7 @@ Otherwise use a custom implementation of 'ProveSchedulerProcess'
 
 ## ProveSchedulerProcess
 ```python
-ProveSchedulerProcess(self, problemVariant, problemFile, *, timeout)
+ProveSchedulerProcess(self, problemVariant, problemFile, *, timeout, withCASCStdout)
 ```
 
 Process runned by the Scheduler to prove a [problemVariant](data.md).

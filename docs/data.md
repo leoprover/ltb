@@ -113,6 +113,13 @@ ProblemVariant.getOutfile(self)
 
 Output filename of the problem variant.
 
+### getErrfile
+```python
+ProblemVariant.getErrfile(self)
+```
+
+Output filename of the problem variant.
+
 ### isSuccessful
 ```python
 ProblemVariant.isSuccessful(self)

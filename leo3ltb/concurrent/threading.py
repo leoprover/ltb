@@ -21,6 +21,8 @@ class ThreadedTaskExecuter:
     * onTaskCanceled(task) needs to be overloaded
       - is called iff the task is canceled 
       - allows submitting a task using self.submit(task) inside this function call
+    * onTaskStart(task) needs to be overloaded
+      - is called directly before the task is actual started in a thread
     
     * instance.submittedTasks() to get all submitted tasks
     * instance.runningTasks() to get all running tasks
