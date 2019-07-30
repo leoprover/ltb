@@ -46,13 +46,6 @@ class ProveSchedulerProcess(Process):
         '''
         raise NotImplementedError
 
-    def onStart(self):
-        '''
-        This is not synchronized with the end of the task, hence start may be after end in the output.
-        '''
-        if self.withCASCStdout:
-            print('% SZS status Started for {}'.format(self.problemVariant.getProblemFile()))
-
 class Leo3SchedulerProcess(ProveSchedulerProcess):
     '''
     If you are using the Leo-III theorem prover using the default shell command 'leo3' use this implementation.
@@ -98,12 +91,13 @@ class ProveScheduler(ThreadProcessExecuter):
         '''
         Get the complex status of the Scheduler as human readable string.
         '''
-        return 'noSuccess:\n{noSuccess}\nsuccess:\n{success}\nhistory:\n{history}\nscheduled:\n{scheduled}\nrunning:\n{running}'.format(
-            noSuccess=format.indent(map(str,self.noSuccessProblems), '  '),
-            success=format.indent(map(str,self.successProblems), '  '),
-            history=format.indent(map(str,self.finishHistory), '  '),
-            scheduled=format.indent(map(str,self.scheduledProblemVariants()), '  '),
-            running=format.indent(map(str,self.runningProblemVariants()), '  '),
+        return 'noSuccess:\n{noSuccess}\nsuccess:\n{success}\nhistory:\n{history}\nscheduled:\n{scheduled}\nactive:\n{active}\nrunning:\n{running}'.format(
+            noSuccess=format.indent(map(str,self.noSuccessProblems), '* '),
+            success=format.indent(map(str,self.successProblems), '* '),
+            history=format.indent(map(str,self.finishHistory), '* '),
+            scheduled=format.indent(map(str,self.scheduledProblemVariants()), '* '),
+            active=format.indent(map(str,self.activeProblemVariants()), '* '),
+            running=format.indent(map(str,self.runningProblemVariants()), '* '),
         )
 
     def scheduledProblemVariants(self):
@@ -111,6 +105,16 @@ class ProveScheduler(ThreadProcessExecuter):
         Get all problem variants which are enqueued.
         '''
         ps = self.scheduledProcesses()
+        psv = []
+        for p in ps:
+            psv.append(p.problemVariant)
+        return psv
+
+    def activeProblemVariants(self):
+        '''
+        Get all problem variants which are enqueued.
+        '''
+        ps = self.activeProcesses()
         psv = []
         for p in ps:
             psv.append(p.problemVariant)
@@ -144,7 +148,7 @@ class ProveScheduler(ThreadProcessExecuter):
             withCASCStdout=self.withCASCStdout,
         )
         problemVariant.process = process
-        problemVariant.szsStatus = 'InProgress'
+        problemVariant.szsStatus = 'NotTriedYet'
         problemVariant.schedulerStatus = 'Queued'
 
         logger.debug(format.magenta('schedule {}').format(process))
@@ -257,6 +261,18 @@ class ProveScheduler(ThreadProcessExecuter):
         self._cleanupProve(problemVariant, alreadySuccessfull=wasAlreadySuccessfull)
         self.onUserForced(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
 
+    def onProcessStart(self, process):
+        problemVariant = process.problemVariant
+        problem = problemVariant.problem
+
+        problemVariant.szsStatus = 'InProcess'
+        problemVariant.schedulerStatus = 'Started'
+
+        if self.withCASCStdout:
+            print('% SZS status Started for {}'.format(problemVariant.getProblemFile()))
+
+        self.onStart(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
+
     def onSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
         '''
         Called if a proverall is terminated with a success-szs-status.
@@ -305,6 +321,19 @@ class ProveScheduler(ThreadProcessExecuter):
         Called if a prove call is terminated by the scheduler, using one of
         * terminate(problemVariant)
         * terminateProblemVariants(problem)
+
+        Args:
+        * problemVariant: terminated problem variant
+        * overallTimeleft time left to prove the batch
+        * problemTimeleft time left to prove the problem
+
+        Needs to be overwritten.
+        '''
+        NotImplementedError()
+
+    def onStart(self, problemVariant, overallTimeleft, problemTimeleft):
+        '''
+        Called if a prove call is started by the scheduler.
 
         Args:
         * problemVariant: terminated problem variant

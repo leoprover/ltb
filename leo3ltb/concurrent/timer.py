@@ -38,7 +38,9 @@ class Timer:
             if self.startTime is None:
                 raise Exception(self.startTime)
             return self.endTime - self.startTime
-        return time.time() - self.endTime
+        if self.startTime:
+            return time.time() - self.startTime
+        return 0
 
     def __str__(self):
         if self.scheduledTime is None:

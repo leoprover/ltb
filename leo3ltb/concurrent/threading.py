@@ -1,5 +1,6 @@
 import logging
 
+import collections
 import subprocess
 from concurrent import futures 
 
@@ -29,39 +30,60 @@ class ThreadedTaskExecuter:
         threads=2
     ):
         self.executor = futures.ThreadPoolExecutor(max_workers=threads)
-        self.activeFutures = set()
+        self._scheduledTasks = collections.deque()
+        self._activeFutures = set()
+        self._threads = threads
 
     def scheduledTasks(self):
+        return self._scheduledTasks
+
+    def activeTasks(self):
         scheduled = []
-        for future in self.activeFutures:
+        for future in self._activeFutures:
             scheduled.append(future.task)
 
         return scheduled
 
     def runningTasks(self):
         running = []
-        for future in self.activeFutures:
+        for future in self._activeFutures:
             if future.running():
                 running.append(future.task)
         return running
 
     def submit(self, task):
         logger.debug('schedule {}'.format(task))
-        future = self.executor.submit(task.run)
-        future.task = task
-        task.future = future
+        self._scheduledTasks.append(task)
+        self._refillActiveTasks()
 
-        self.activeFutures.add(future)
+    def _refillActiveTasks(self):
+        numUsed = len(self._activeFutures)
+        numOpen = self._threads - numUsed
+        numScheduled = len(self._scheduledTasks)
+        numToAdd = min(numOpen, numScheduled)
+
+        logger.debug('refill used,open,scheduled: [{}/{}/{}]: {}/{}'.format(numUsed, numOpen, numScheduled, self._activeFutures, self._scheduledTasks))
+
+        for i in range(0, numToAdd):
+            task = self._scheduledTasks.popleft()
+
+            future = self.executor.submit(task.run)
+            future.task = task
+            task.future = future
+            self._activeFutures.add(future)
+            self.onTaskStart(task)
         
     def wait(self):
-        while len(self.activeFutures) > 0:
-            done, not_done = futures.wait(self.activeFutures, 
+        while len(self._scheduledTasks) + len(self._activeFutures) > 0:
+            done, not_done = futures.wait(self._activeFutures, 
                 return_when=futures.FIRST_COMPLETED
             )
 
             for future in done:
-                self.activeFutures.remove(future)
+                self._activeFutures.remove(future)
                 self._onFinish(future)
+
+            self._refillActiveTasks()
 
     def cancle(self, task):
         task.future.cancle()
@@ -75,6 +97,9 @@ class ThreadedTaskExecuter:
         except futures.CancelledError as error:
             logger.debug('onTaskCanceled {}'.format(task))
             self.onTaskCanceled(task)
+
+    def onTaskStart(self, task):
+        raise NotImplementedError()
 
     def onTaskFinish(self, task, result):
         raise NotImplementedError()

@@ -22,13 +22,11 @@ logger.setLevel(logging.DEBUG)
 
 class MyScheduler(ProveScheduler):
     def onSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.green('onSuccess {} OverallTimeleft: {} ProblemTimeleft: {}').format(problemVariant, overallTimeleft, problemTimeleft))
-        logger.debug('\n'+self.status())
-
+        logger.info(format.green('onSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        
     def onNoSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.yellow('onNoSuccess {} OverallTimeleft: {} ProblemTimeleft: {}').format(problemVariant, overallTimeleft, problemTimeleft))
-        logger.debug('\n'+self.status())
-
+        logger.info(format.yellow('onNoSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        
         # TODO? break if we found a countermodel an such?
         problem = problemVariant.problem
 
@@ -39,8 +37,7 @@ class MyScheduler(ProveScheduler):
             scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=10)
 
     def onTimeout(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {}').format(problemVariant, overallTimeleft, problemTimeleft))
-        logger.debug('\n'+self.status())
+        logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
 
         problem = problemVariant.problem
 
@@ -51,8 +48,10 @@ class MyScheduler(ProveScheduler):
             scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=10)
 
     def onUserForced(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {}').format(problemVariant, overallTimeleft, problemTimeleft))
-        logger.debug('\n'+self.status())
+        logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+
+    def onStart(self, problemVariant, overallTimeleft, problemTimeleft):
+        logger.info(format.green('onStart {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
 
 args = leo3ltb.parse_args()
 with leo3ltb.batches_from_args(args) as batches:

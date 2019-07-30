@@ -95,9 +95,10 @@ class ProblemVariant:
         return SZS_STATUS.isSuccess(self.szsStatus)
 
     def __str__(self):
-        return '{name} [{szsStatus}, {processState}] {stdout} {stderr}'.format(
+        return '{name} [{szsStatus}, {schedulerStatus}, {processState}] {stdout} {stderr}'.format(
             name=self.getProblemFile(),
             szsStatus=self.szsStatus,
+            schedulerStatus=self.schedulerStatus if self.schedulerStatus else '-',
             processState=self.process.stateStr() if self.process else 'no process',
             stdout=self.stdout[-3:],
             stderr=self.stderr[-3:],
