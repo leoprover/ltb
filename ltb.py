@@ -31,10 +31,10 @@ class MyScheduler(ProveScheduler):
         problem = problemVariant.problem
 
         if problemVariant.variant == '^3':
-            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=40)
+            self.prove(ProblemVariant(problem, variant='^1'), timeout=40)
         return
         if problemVariant.variant == '^1':
-            scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=10)
+            self.prove(ProblemVariant(problem, variant='^2'), timeout=10)
 
     def onTimeout(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
@@ -42,10 +42,10 @@ class MyScheduler(ProveScheduler):
         problem = problemVariant.problem
 
         if problemVariant.variant == '^3':
-            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=40)
+            self.prove(ProblemVariant(problem, variant='^1'), timeout=40)
         return
         if problemVariant.variant == '^1':
-            scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=10)
+            self.prove(ProblemVariant(problem, variant='^2'), timeout=10)
 
     def onUserForced(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
