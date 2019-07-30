@@ -17,8 +17,10 @@ class ProveSchedulerProcess(Process):
     '''
     Process runned by the Scheduler to prove a [problemVariant](data.md).
     '''
-    def __init__(self, problemVariant, problemFile, *, timeout):
+    def __init__(self, problemVariant, problemFile, *, timeout, withCASCStdout):
         self.problemVariant = problemVariant
+        self.withCASCStdout = withCASCStdout
+
         call = list(map(str, self.generateProverCall(problemFile, timeout)))
         super(ProveSchedulerProcess, self).__init__(call, timeout=timeout)
 
@@ -43,6 +45,13 @@ class ProveSchedulerProcess(Process):
         ```
         '''
         raise NotImplementedError
+
+    def onStart(self):
+        '''
+        This is not synchronized with the end of the task, hence start may be after end in the output.
+        '''
+        if self.withCASCStdout:
+            print('% SZS status Started for {}'.format(self.problemVariant.getProblemFile()))
 
 class Leo3SchedulerProcess(ProveSchedulerProcess):
     '''
@@ -123,20 +132,23 @@ class ProveScheduler(ThreadProcessExecuter):
         '''
         self.scheduleHistory.append(problemVariant)
 
-        problemFile = self.batch.augmentProblemVariant(problemVariant)
+        '''
+        mail from jeff: no augmentation necessary, file imports need to be directly inside the problem file
+        '''
+        #problemFile = self.batch.augmentProblemVariant(problemVariant)
+        problemFile = problemVariant.getProblemFile()
         process = self.schedulerProcessClass(
             problemVariant=problemVariant,
             problemFile=problemFile,
             timeout=timeout,
+            withCASCStdout=self.withCASCStdout,
         )
         problemVariant.process = process
         problemVariant.szsStatus = 'InProgress'
         problemVariant.schedulerStatus = 'Queued'
 
         logger.debug(format.magenta('schedule {}').format(process))
-        if self.withCASCStdout:
-            print('% SZS status Started for {}'.format(problemVariant.getProblemFile()))
-
+        
         self.submit(process)
 
     def terminate(self, problemVariant):

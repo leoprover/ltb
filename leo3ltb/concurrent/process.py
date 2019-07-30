@@ -33,6 +33,7 @@ class Process:
         self.state = self.STARTED
         self._isRunning = True
         self.timer.start()
+        self.onStart()
         
         # The os.setsid() is passed in the argument preexec_fn so
         # it's run after the fork() and before exec() to run the shell.
@@ -72,7 +73,11 @@ class Process:
         stdout_utf8 = stdout.decode('utf8')
         stderr_utf8 = stderr.decode('utf8')
 
-        return stdout_utf8.split('\n'), stderr_utf8.split('\n'), processStatus
+        stdout_utf8_split = stdout_utf8.split('\n')
+        stderr_utf8_split = stderr_utf8.split('\n')
+
+        self.onEnd()
+        return stdout_utf8_split, stderr_utf8_split, processStatus
 
     def communicate0(self):
         if self.timeout:
@@ -94,6 +99,12 @@ class Process:
 
         self.state = self.COMPLETED
         return stdout, stderr, self.COMPLETED
+
+    def onStart(self):
+        pass
+
+    def onEnd(self):
+        pass
 
     def stateStr(self):
         return '{state} {timer}/{timeout}s'.format(
