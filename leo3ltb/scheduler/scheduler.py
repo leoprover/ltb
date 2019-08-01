@@ -86,6 +86,7 @@ class ProveScheduler(ThreadProcessExecuter):
         self.withCASCStdout = withCASCStdout
 
         self.timer = CountdownTimer(overallTimeout)
+        self.numThreads = threads
 
     def status(self):
         '''
@@ -273,6 +274,14 @@ class ProveScheduler(ThreadProcessExecuter):
 
         self.onStart(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
 
+    def storeProfile(self, file):
+        from . import profiler
+        profiler.plot(self.finishHistory, 
+            zero=self.timer.getStart(), 
+            outfile=self.batch.logfile(file), 
+            numThreads=self.numThreads,
+        )
+
     def onSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
         '''
         Called if a proverall is terminated with a success-szs-status.
@@ -350,17 +359,17 @@ class ProveScheduler(ThreadProcessExecuter):
         TODO: do we override to much?
         '''
         if not alreadySuccessfull:
-            with self.batch.outfile(problemVariant.problem.getOutfile(), 'w') as out:
+            with open(self.batch.outfile(problemVariant.problem.getOutfile()), 'w') as out:
                 for line in problemVariant.stdout:
                     out.write(line)
                     if line != '': out.write('\n')
 
-        with self.batch.logfile(problemVariant.getOutfile(), 'w') as out:
+        with open(self.batch.logfile(problemVariant.getOutfile()), 'w') as out:
             for line in problemVariant.stdout:
                 out.write(line)
                 if line != '': out.write('\n')
 
-        with self.batch.logfile(problemVariant.getErrfile(), 'w') as out:
+        with open(self.batch.logfile(problemVariant.getErrfile()), 'w') as out:
             for line in problemVariant.stderr:
                 out.write(line)
                 if line != '': out.write('\n')

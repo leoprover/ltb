@@ -40,21 +40,21 @@ LTBBatchContext(self, *, definition, outdir, tempdir, logdir)
 
 ### tempfile
 ```python
-LTBBatchContext.tempfile(self, name, rwx)
+LTBBatchContext.tempfile(self, name)
 ```
 
 Open a tempfile with name 'name' in the tempdir specified in processBatch.
 
 ### outfile
 ```python
-LTBBatchContext.outfile(self, name, rwx)
+LTBBatchContext.outfile(self, name)
 ```
 
 Open a outfile with name 'name' in the outdir specified in processBatch.
 
 ### logfile
 ```python
-LTBBatchContext.logfile(self, name, rwx)
+LTBBatchContext.logfile(self, name)
 ```
 
 Open a logfile with name 'name' in the logdir specified in processBatch.

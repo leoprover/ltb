@@ -122,23 +122,23 @@ class LTBBatchContext:
             '[{threadName}, {name}]: {message}', style='{'
         ))
 
-    def tempfile(self, name, rwx):
+    def tempfile(self, name):
         ''' 
         Open a tempfile with name 'name' in the tempdir specified in processBatch.
         '''
-        return open(os.path.join(str(self.tempdir.name), name), rwx)
+        return os.path.join(str(self.tempdir.name), name)
 
-    def outfile(self, name, rwx):
+    def outfile(self, name):
         ''' 
         Open a outfile with name 'name' in the outdir specified in processBatch.
         '''
-        return open(os.path.join(str(self.outdir.name), name), rwx)
+        return os.path.join(str(self.outdir.name), name)
 
-    def logfile(self, name, rwx):
+    def logfile(self, name):
         ''' 
         Open a logfile with name 'name' in the logdir specified in processBatch.
         '''
-        return open(os.path.join(str(self.logdir.name), name), rwx)
+        return os.path.join(str(self.logdir.name), name)
 
     def augmentProblemVariant(self, problemVariant):
         '''
