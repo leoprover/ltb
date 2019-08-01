@@ -137,7 +137,7 @@ class ProveScheduler(ThreadProcessExecuter):
         self.scheduleHistory.append(problemVariant)
 
         '''
-        mail from jeff: no augmentation necessary, file imports need to be directly inside the problem file
+        mail from geoff: no augmentation necessary, file imports need to be directly inside the problem file
         '''
         #problemFile = self.batch.augmentProblemVariant(problemVariant)
         problemFile = problemVariant.getProblemFile()
