@@ -11,7 +11,7 @@ aims to implement a solution for the LTB division using [Leo-III](http://page.mi
 
 ## Getting started
 ```
-[leo3ltb]$ cd example1
+[leo3ltb]$ cd example4
 [example1]$ ./run_ltb
 ```
 
@@ -30,6 +30,9 @@ Get final outputs:
 [example1]$ cd Output~
 ```
 
+And a Scheduler runtime profile in ```Log~/profile.png```:
+![Runtime Profile](docs/profile.png)
+
 ## License
 leo3ltb is licensed under the BSD 3-clause "New" or "Revised" License. See [LICENSE](LICENSE).
 
@@ -39,6 +42,8 @@ The documentation consits of
 * some examples
     - [example1](/example1)
     - [example2](/example2)
+    - [example3](/example3)
+    - [example4](/example4)
 
 ## Build docs
 ```

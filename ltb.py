@@ -31,10 +31,10 @@ class MyScheduler(ProveScheduler):
         problem = problemVariant.problem
 
         if problemVariant.variant == '^3':
-            self.prove(ProblemVariant(problem, variant='^1'), timeout=40)
+            self.prove(ProblemVariant(problem, variant='^1'), timeout=5)
         return
         if problemVariant.variant == '^1':
-            self.prove(ProblemVariant(problem, variant='^2'), timeout=10)
+            self.prove(ProblemVariant(problem, variant='^2'), timeout=5)
 
     def onTimeout(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
@@ -42,10 +42,10 @@ class MyScheduler(ProveScheduler):
         problem = problemVariant.problem
 
         if problemVariant.variant == '^3':
-            self.prove(ProblemVariant(problem, variant='^1'), timeout=40)
+            self.prove(ProblemVariant(problem, variant='^1'), timeout=5)
         return
         if problemVariant.variant == '^1':
-            self.prove(ProblemVariant(problem, variant='^2'), timeout=10)
+            self.prove(ProblemVariant(problem, variant='^2'), timeout=5)
 
     def onUserForced(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
@@ -72,6 +72,7 @@ with leo3ltb.batches_from_args(args) as batches:
         )
 
         for problem in batch.definition.problems:
-            scheduler.prove(ProblemVariant(problem, variant='^3'), timeout=40)
+            scheduler.prove(ProblemVariant(problem, variant='^3'), timeout=5)
             
         scheduler.wait()
+        scheduler.storeProfile('profile.png')

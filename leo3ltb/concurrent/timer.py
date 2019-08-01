@@ -33,6 +33,21 @@ class Timer:
             raise Exception(self.endTime)
         self.endTime = time.time()
 
+    def getScheduled(self, zero = 0):
+        if self.scheduledTime is None:
+            return None
+        return self.scheduledTime - zero
+
+    def getStart(self, zero = 0):
+        if self.startTime is None:
+            return None
+        return self.startTime - zero
+
+    def getEnd(self, zero = 0):
+        if self.endTime is None:
+            return None
+        return self.endTime - zero
+
     def getTimeRunning(self):
         if self.endTime:
             if self.startTime is None:
@@ -62,3 +77,9 @@ class CountdownTimer:
 
     def timeleft(self):
         return self.timeout - (time.time() - self.startTime)
+
+    def getStart(self, zero = 0):
+        if self.startTime is None:
+            return None
+        return self.startTime - zero
+    
