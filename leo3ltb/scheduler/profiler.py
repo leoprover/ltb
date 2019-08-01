@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def plot(problemVariants, *, zero, outfile, numThreads):
-    columns = ['Problem', 'NotTriedYet', 'Scheduled', 'Success', 'Timeout', 'Stopped']
-    colors = ['tab:gray', 'tab:purple', 'tab:green', 'tab:orange', 'tab:red']
+    columns = ['Problem', 'NotTriedYet', 'Scheduled', 'Success', 'Timeout', 'Stopped', 'Ended']
+    colors = ['w', 'tab:purple', 'tab:green', 'tab:orange', 'tab:red', 'w']
 
     problems = {}
     for problemVariant in problemVariants:
@@ -36,6 +36,7 @@ def plot(problemVariants, *, zero, outfile, numThreads):
                     0,                      # time success
                     0,                      # time timeout
                     0,                      # time error
+                    0,                      # time ended
                 ])
             else:
                 problemVariant = problem.variants[v]
@@ -58,6 +59,7 @@ def plot(problemVariants, *, zero, outfile, numThreads):
                     ended - started if state == 'Success' else 0, # time success
                     ended - started if state == 'Timeout' else 0, # time timeout
                     ended - started if state == 'Stopped' else 0, # time error
+                    t_max - ended,
                 ])
 
     dfs = []
