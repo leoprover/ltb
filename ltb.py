@@ -48,11 +48,13 @@ class MyScheduler(ProveScheduler):
             rest = int(int(factorVariant3 * tpp) - timeused) # initial timeout - timeused
             if (rest < 0):
                 rest = 0 # just to be sure
-        if problemVariant.variant == '^1':
+        elif problemVariant.variant == '^1':
             # timeout variant3 + timeout variant1 - timeused
             rest = rest = int(int(factorVariant3 * tpp) + int(factorVariant1 * tpp) - timeused) 
             if (rest < 0):
                 rest = 0
+        else:
+            rest = int(tpp - timeused)
 
         logger.info(format.yellow('onNoSuccess {} OverallTimeleft: {} ProblemTimeleft: {} Rest: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, rest, self.status()))
 
