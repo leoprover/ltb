@@ -33,7 +33,7 @@ class Process:
         self.state = self.STARTED
         self._isRunning = True
         self.timer.start()
-        
+
         # The os.setsid() is passed in the argument preexec_fn so
         # it's run after the fork() and before exec() to run the shell.
         # @see https://stackoverflow.com/questions/4789837/how-to-terminate-a-python-subprocess-launched-with-shell-true
@@ -42,6 +42,7 @@ class Process:
             stdout=subprocess.PIPE, # store the stdout in in the subprocess itself
             stderr=subprocess.PIPE, # store the stderr in in the subprocess itself
             preexec_fn=os.setsid,
+            env=os.environ,  # use the environment of the python instance, s.t. we can set enviroment variables for started subprocesses
             **self.kwargs,
         )
 
