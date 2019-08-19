@@ -274,6 +274,17 @@ class ProveScheduler(ThreadProcessExecuter):
 
         self.onStart(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
 
+    def onProcessError(self, process, error):
+        problemVariant = process.problemVariant
+        problem = problemVariant.problem
+        wasAlreadySuccessfull = problem.isSuccessful()
+
+        problemVariant.szsStatus = 'Error'
+        problemVariant.schedulerStatus = 'Error'
+
+        self._cleanupProve(problemVariant, alreadySuccessfull=wasAlreadySuccessfull)
+        self.onNoSuccess(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
+
     def storeProfile(self, file):
         from . import profiler
         profiler.plot(self.finishHistory, 

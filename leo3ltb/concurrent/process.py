@@ -66,7 +66,12 @@ class Process:
         return self._isRunning
 
     def communicate(self):
-        stdout, stderr, processStatus = self.communicate0()
+        try:
+            stdout, stderr, processStatus = self.communicate0()
+        except:
+            self._process.kill()
+            raise
+
         self._isRunning = False
         self.timer.end()
 
@@ -145,6 +150,8 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
       - gets "stdout" and "stderr" of the process.
     * onProcessStart(process) needs to be overloaded
       - is called directly before the process is actual started in a thread
+    * onProcessError(self, error) needs to be overloaded
+      - is called iff the process is terminated with an exception (file buffer error, or what so ever)
     '''
 
     def __init__(self, **kwargs):
@@ -199,6 +206,9 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
     def onTaskStart(self, task):
         self.onProcessStart(task.process)
 
+    def onTaskError(self, task, error):
+        self.onProcessError(task.process, error)
+
     def onProcessCompleted(self, process, stdout, stderr):
         NotImplementedError()
 
@@ -209,4 +219,7 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
         NotImplementedError()
 
     def onProcessStart(self, process):
+        NotImplementedError()
+
+    def onProcessError(self, process, error):
         NotImplementedError()
