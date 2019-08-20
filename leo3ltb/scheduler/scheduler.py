@@ -20,9 +20,14 @@ class ProveSchedulerProcess(Process):
     def __init__(self, problemVariant, problemFile, *, timeout, withCASCStdout):
         self.problemVariant = problemVariant
         self.withCASCStdout = withCASCStdout
+        self.timeout = timeout
+        self.problemFile = problemFile
 
-        call = list(map(str, self.generateProverCall(problemFile, timeout)))
-        super(ProveSchedulerProcess, self).__init__(call, timeout=timeout)
+        super(ProveSchedulerProcess, self).__init__(generateCall=self.generateCall)
+
+    def generateCall(self):
+        timeout = self.timeout()
+        return timeout, list(map(str, self.generateProverCall(self.problemFile, timeout)))
 
     def generateProverCall(self, problemFile, timeout):
         '''
@@ -145,7 +150,7 @@ class ProveScheduler(ThreadProcessExecuter):
         process = self.schedulerProcessClass(
             problemVariant=problemVariant,
             problemFile=problemFile,
-            timeout=timeout,
+            timeout=lambda: timeout(self.batch, problemVariant, self.timer.timeleft(), self.getProblemTimeUsed(problemVariant.problem), self.getProblemTimeLeft(problemVariant.problem)),
             withCASCStdout=self.withCASCStdout,
         )
         problemVariant.process = process
