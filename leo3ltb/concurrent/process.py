@@ -35,7 +35,7 @@ class Process:
         self.state = self.STARTED
         self._isRunning = True
         
-        if _generateCall:
+        if self._generateCall:
             timeout, call = self._generateCall()
             self._timeout = timeout
             self._call = call

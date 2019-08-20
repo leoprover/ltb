@@ -74,9 +74,9 @@ class MyScheduler(ProveScheduler):
 args = leo3ltb.parse_args()
 with leo3ltb.batches_from_args(args) as batches:
     for batch in batches:
-        #threading.logger.addHandler(batch.log)
-        #process.logger.addHandler(batch.log)
-        #scheduler.logger.addHandler(batch.log)
+        threading.logger.addHandler(batch.log)
+        process.logger.addHandler(batch.log)
+        scheduler.logger.addHandler(batch.log)
         logger.addHandler(batch.log)
 
         assert batch.definition.config.get('execution.order', None)=='unordered'

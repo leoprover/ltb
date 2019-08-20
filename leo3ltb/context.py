@@ -42,13 +42,13 @@ class processBatches:
     ```
     @see LTBBatchContext below.
     '''
-    def __init__(self, batchDefinitions, *, outdir='', tempdir='', logdir='', clearoutputdir=False):
+    def __init__(self, batchDefinitions, *, outdir='', tempdir=None, logdir=None, clearoutputdir=False):
         self.batches = []
         for i, b in enumerate(batchDefinitions):
             self.batches.append(processBatch(b, 
                 outdir=outdir, 
-                tempdir=tempdir+str(i), 
-                logdir=logdir+str(i), 
+                tempdir=tempdir+str(i) if tempdir else None, 
+                logdir=logdir+str(i) if logdir else None, 
                 clearoutputdir=clearoutputdir
             ))
 
@@ -72,7 +72,7 @@ class processBatch:
     ```
     @see LTBBatchContext below.
     '''
-    def __init__(self, batchDefinition, *, outdir='', tempdir='', logdir='', clearoutputdir=False):
+    def __init__(self, batchDefinition, *, outdir='', tempdir=None, logdir=None, clearoutputdir=False):
         self.definition = batchDefinition
         self.outdir = outdir
         self.tempdir = tempdir
@@ -107,7 +107,10 @@ class processBatch:
         return self.context
 
     def __exit__(self, type, value, traceback):
-        self.context.tempdir.cleanup()
+        if not self.tempdir:
+            self.context.tempdir.cleanup()
+        if not self.logdir:
+            self.context.logdir.cleanup()
 
 class LTBBatchContext:
     def __init__(self, *, definition, outdir, tempdir, logdir):

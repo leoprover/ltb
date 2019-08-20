@@ -137,7 +137,7 @@ class ThreadedTaskExecuter:
             logger.debug('onTaskCanceled {}'.format(task))
             self.onTaskCanceled(task)
         except Exception as error:
-            logger.debug('onTaskError {} {}'.format(task, error))
+            logger.debug('onTaskError {} {}'.format(task, repr(error)))
             self.onTaskError(task, error)
 
     def onTaskStart(self, task):
