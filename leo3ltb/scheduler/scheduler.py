@@ -77,12 +77,14 @@ class ProveScheduler(ThreadProcessExecuter):
         threads, 
         schedulerProcessClass, 
         batch, 
+        basepath,
         overallTimeout,
         problemTimeout=None, 
         withCASCStdout=True,
     ):
         super(ProveScheduler, self).__init__(threads=threads)
         self.batch = batch
+        self.basepath = basepath
         self.noSuccessProblems = batch.definition.problems
         self.successProblems = []
         self.scheduleHistory = []
@@ -153,7 +155,7 @@ class ProveScheduler(ThreadProcessExecuter):
         problemFile = problemVariant.getProblemFile()
         process = self.schedulerProcessClass(
             problemVariant=problemVariant,
-            problemFile=problemFile,
+            problemFile=os.path.join(self.basepath,problemFile),
             timeout=timeout,
             withCASCStdout=self.withCASCStdout,
         )

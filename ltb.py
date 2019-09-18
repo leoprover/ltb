@@ -114,9 +114,10 @@ with leo3ltb.batches_from_args(args) as batches:
         assert batch.definition.config.get('execution.order', None)=='unordered'
 
         scheduler = MyScheduler( 
-            threads=3,
+            threads=6,
             schedulerProcessClass=Leo3SchedulerProcess,
             batch=batch,
+            basepath=os.path.dirname(os.path.abspath(args.batch)),
             overallTimeout=batch.definition.config.overallTimeout(),
             problemTimeout=batch.definition.config.problemTimeout(),
         )
