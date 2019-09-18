@@ -23,6 +23,8 @@ class ThreadedTaskExecuter:
     * onTaskCanceled(self, task) needs to be overloaded
       - is called iff the task is canceled 
       - allows submitting a task using self.submit(task) inside this function call
+    * onTaskError(self, error) needs to be overloaded
+      - is called iff the task run method has thrown an exception
     
     Behaviour:
     * all callbacks will be call in the same thread as 'wait(self)' is called
@@ -134,6 +136,9 @@ class ThreadedTaskExecuter:
         except futures.CancelledError as error:
             logger.debug('onTaskCanceled {}'.format(task))
             self.onTaskCanceled(task)
+        except Exception as error:
+            logger.debug('onTaskError {} {}'.format(task, repr(error)))
+            self.onTaskError(task, error)
 
     def onTaskStart(self, task):
         raise NotImplementedError()
@@ -143,3 +148,7 @@ class ThreadedTaskExecuter:
 
     def onTaskCanceled(self, task):
         raise NotImplementedError()
+    
+    def onTaskError(self, task, error):
+        raise NotImplementedError()
+        
