@@ -17,28 +17,36 @@ class Process:
     TIMEOUT = 'Timeout'
     FORCED_TERMINATED = 'ForcedTerminated'
 
-    def __init__(self, call, timeout=None, **kwargs):
-        self.call = call
+    def __init__(self, *, timeout=None, call=None, generateCall=None, **kwargs):
         self.kwargs = kwargs
         self._isForcedTerminated = False
         self._isRunning = False
 
+        self._timeout = timeout
+        self._call = call
+        self._generateCall = generateCall
+
         self.state = self.INITIALIZED
 
-        self.timeout = timeout
         self.timer = Timer()
         self.timer.schedule()
 
     def start(self):
         self.state = self.STARTED
         self._isRunning = True
+        
+        if self._generateCall:
+            timeout, call = self._generateCall()
+            self._timeout = timeout
+            self._call = call
+
         self.timer.start()
 
         # The os.setsid() is passed in the argument preexec_fn so
         # it's run after the fork() and before exec() to run the shell.
         # @see https://stackoverflow.com/questions/4789837/how-to-terminate-a-python-subprocess-launched-with-shell-true
         self._process = subprocess.Popen(
-            self.call,
+            self._call,
             stdout=subprocess.PIPE, # store the stdout in in the subprocess itself
             stderr=subprocess.PIPE, # store the stderr in in the subprocess itself
             preexec_fn=os.setsid,
@@ -66,7 +74,11 @@ class Process:
         return self._isRunning
 
     def communicate(self):
-        stdout, stderr, processStatus = self.communicate0()
+        try:
+            stdout, stderr, processStatus = self.communicate0()
+        except:
+            self._process.kill()
+            raise
         self._isRunning = False
         self.timer.end()
 
@@ -79,9 +91,9 @@ class Process:
         return stdout_utf8_split, stderr_utf8_split, processStatus
 
     def communicate0(self):
-        if self.timeout:
+        if self._timeout:
             try:
-                stdout, stderr = self._process.communicate(timeout=self.timeout)
+                stdout, stderr = self._process.communicate(timeout=self._timeout)
             except subprocess.TimeoutExpired:
                 self._terminate()
                 stdout, stderr = self._process.communicate()
@@ -103,12 +115,12 @@ class Process:
         return '{state} {timer}/{timeout}s'.format(
             state=self.state,
             timer=self.timer,
-            timeout=self.timeout,
+            timeout=self._timeout,
         )
 
     def __str__(self):
         return '{call}[{state}]'.format(
-            call=self.call,
+            call=self._call,
             state=self.stateStr(),
         )
 
@@ -145,6 +157,8 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
       - gets "stdout" and "stderr" of the process.
     * onProcessStart(process) needs to be overloaded
       - is called directly before the process is actual started in a thread
+    * onProcessError(self, error) needs to be overloaded
+      - is called iff the process is terminated with an exception (file buffer error, or what so ever)
     '''
 
     def __init__(self, **kwargs):
@@ -199,6 +213,9 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
     def onTaskStart(self, task):
         self.onProcessStart(task.process)
 
+    def onTaskError(self, task, error):
+        self.onProcessError(task.process, error)
+
     def onProcessCompleted(self, process, stdout, stderr):
         NotImplementedError()
 
@@ -210,3 +227,7 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
 
     def onProcessStart(self, process):
         NotImplementedError()
+    
+    def onProcessError(self, process, error):
+        NotImplementedError()
+        
