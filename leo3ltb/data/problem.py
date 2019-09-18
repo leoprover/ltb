@@ -17,12 +17,19 @@ class Problem:
         self.output = output
         self.variants = {}
         self.successfulVariant = None
+        self._finished = False
 
     def isSuccessful(self):
         '''
         Whether a prove for this problem was successful.
         '''
         return self.successfulVariant is not None
+
+    def isFinished(self):
+        return self._finished
+
+    def setFinished(self):
+        self._finished = True
 
     def getOutfile(self):
         '''
@@ -93,6 +100,14 @@ class ProblemVariant:
         Whether a prove for this problem variant was successful.
         '''
         return SZS_STATUS.isSuccess(self.szsStatus)
+        
+    def isScheduled(self):
+        '''
+        Whether the problem is scheduled.
+        '''
+        if self.schedulerStatus:
+            return True
+        return False
 
     def __str__(self):
         return '{name} [{szsStatus}, {schedulerStatus}, {processState}] {stdout} {stderr}'.format(
