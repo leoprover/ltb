@@ -21,9 +21,14 @@ class ProveSchedulerProcess(Process):
     def __init__(self, problemVariant, problemFile, *, timeout, withCASCStdout):
         self.problemVariant = problemVariant
         self.withCASCStdout = withCASCStdout
+        self.timeout = timeout
+        self.problemFile = problemFile
 
-        call = list(map(str, self.generateProverCall(problemFile, timeout)))
-        super(ProveSchedulerProcess, self).__init__(call, timeout=timeout)
+        super(ProveSchedulerProcess, self).__init__(generateCall=self.generateCall)
+
+    def generateCall(self):
+        timeout = self.timeout()
+        return timeout, list(map(str, self.generateProverCall(self.problemFile, timeout)))
 
     def generateProverCall(self, problemFile, timeout):
         '''
@@ -56,7 +61,7 @@ class Leo3SchedulerProcess(ProveSchedulerProcess):
     '''
     def generateProverCall(self, problemFile, timeout):
         leo3executable = os.environ.get('LEO3', 'leo3')
-        call = [leo3executable, problemFile, '-t', int(timeout), '-p']
+        call = ['java', '-Xmx16g', '-Xss32m', '-jar', leo3executable, problemFile, '-t', int(timeout), '-p']
         if 'CVC4' in os.environ:
           call = call + ['--atp','cvc4='+os.environ.get('CVC4')]
         if 'EPROVER' in os.environ:
@@ -156,7 +161,7 @@ class ProveScheduler(ThreadProcessExecuter):
         process = self.schedulerProcessClass(
             problemVariant=problemVariant,
             problemFile=os.path.join(self.basepath,problemFile),
-            timeout=timeout,
+            timeout=lambda: timeout(self.batch, problemVariant, self.timer.timeleft(), self.getProblemTimeUsed(problemVariant.problem), self.getProblemTimeLeft(problemVariant.problem)),
             withCASCStdout=self.withCASCStdout,
         )
         problemVariant.process = process
@@ -284,6 +289,17 @@ class ProveScheduler(ThreadProcessExecuter):
             print('% SZS status Started for {}'.format(problemVariant.getProblemFile()))
 
         self.onStart(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
+
+    def onProcessError(self, process, error):
+        problemVariant = process.problemVariant
+        problem = problemVariant.problem
+        wasAlreadySuccessfull = problem.isSuccessful()
+
+        problemVariant.szsStatus = 'Error'
+        problemVariant.schedulerStatus = 'Error'
+
+        self._cleanupProve(problemVariant, alreadySuccessfull=wasAlreadySuccessfull)
+        self.onNoSuccess(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
 
     def storeProfile(self, file):
         from . import profiler
