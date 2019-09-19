@@ -3,6 +3,7 @@ Implementation of a fully customizeable prove scheduler.
 '''
 
 import logging
+import os
 
 from ..concurrent.process import Process, ThreadProcessExecuter
 from ..concurrent.timer import CountdownTimer
@@ -54,10 +55,18 @@ class ProveSchedulerProcess(Process):
 class Leo3SchedulerProcess(ProveSchedulerProcess):
     '''
     If you are using the Leo-III theorem prover using the default shell command 'leo3' use this implementation.
-    Otherwise use a custom implementation of 'ProveSchedulerProcess'
+    Alternatively, if you set the environment variable $LEO3, this path will be taken as the executable
+    of Leo-III.
+    Also, if you set $EPROVER and/or $CVC4, Leo-III will use these external systems.
     '''
     def generateProverCall(self, problemFile, timeout):
-        return ['leo3', problemFile, '-t', int(timeout), '-p']
+        leo3executable = os.environ.get('LEO3', 'leo3')
+        call = ['java', '-Xmx16g', '-Xss32m', '-jar', leo3executable, problemFile, '-t', int(timeout), '-p']
+        if 'CVC4' in os.environ:
+          call = call + ['--atp','cvc4='+os.environ.get('CVC4')]
+        if 'EPROVER' in os.environ:
+          call = call + ['--atp','e='+os.environ.get('EPROVER')]
+        return call
 
 class ProveScheduler(ThreadProcessExecuter):
     '''
@@ -73,12 +82,14 @@ class ProveScheduler(ThreadProcessExecuter):
         threads, 
         schedulerProcessClass, 
         batch, 
+        basepath,
         overallTimeout,
         problemTimeout=None, 
         withCASCStdout=True,
     ):
         super(ProveScheduler, self).__init__(threads=threads)
         self.batch = batch
+        self.basepath = basepath
         self.noSuccessProblems = batch.definition.problems
         self.successProblems = []
         self.scheduleHistory = []
@@ -149,7 +160,7 @@ class ProveScheduler(ThreadProcessExecuter):
         problemFile = problemVariant.getProblemFile()
         process = self.schedulerProcessClass(
             problemVariant=problemVariant,
-            problemFile=problemFile,
+            problemFile=os.path.join(self.basepath,problemFile),
             timeout=lambda: timeout(self.batch, problemVariant, self.timer.timeleft(), self.getProblemTimeUsed(problemVariant.problem), self.getProblemTimeLeft(problemVariant.problem)),
             withCASCStdout=self.withCASCStdout,
         )

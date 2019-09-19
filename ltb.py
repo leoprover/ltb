@@ -22,19 +22,18 @@ logger.setLevel(logging.DEBUG)
 
 factorVariant3 = 0.67
 factorVariant1 = 0.5
-factorVariant2 = 1
+factorVariant2 = 1.0
 
 def calculateTimeout(factor):
     def t(batch, problemVariant, overallTimeleft, problemTimeUsed, problemTimeleft):
         num_of_open_problems = len(list(filter(lambda p: not p.isFinished(), batch.definition.problems)))
         if num_of_open_problems == 0:
-            assert False
             tpp = overallTimeleft
         else:
             tpp = int(overallTimeleft / num_of_open_problems)
         return int(factor * tpp)
     return t
-    
+
 class MyScheduler(ProveScheduler):
     '''
     batch - wc
@@ -85,6 +84,7 @@ with leo3ltb.batches_from_args(args) as batches:
             threads=3,
             schedulerProcessClass=Leo3SchedulerProcess,
             batch=batch,
+            basepath=os.path.dirname(os.path.abspath(args.batch)),
             overallTimeout=batch.definition.config.overallTimeout(),
             problemTimeout=batch.definition.config.problemTimeout(),
         )

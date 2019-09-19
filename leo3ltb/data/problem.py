@@ -100,6 +100,14 @@ class ProblemVariant:
         Whether a prove for this problem variant was successful.
         '''
         return SZS_STATUS.isSuccess(self.szsStatus)
+        
+    def isScheduled(self):
+        '''
+        Whether the problem is scheduled.
+        '''
+        if self.schedulerStatus:
+            return True
+        return False
 
     def isScheduled(self):
         '''
