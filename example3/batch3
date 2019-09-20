@@ -4,7 +4,7 @@ division.category.training_data TrainingData.HL4.tgz
 execution.order unordered
 output.required Proof
 limit.time.problem.wc 0
-limit.time.overall.wc 450
+limit.time.overall.wc 100
 % SZS end BatchConfiguration
 % SZS start BatchIncludes
 include('Axioms/HL4001*.ax').

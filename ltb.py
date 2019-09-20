@@ -2,7 +2,6 @@ import sys
 import os
 import time
 
-import logging
 import leo3ltb 
 from leo3ltb.scheduler import ProveScheduler, Leo3SchedulerProcess
 from leo3ltb import format, ProblemVariant
@@ -10,19 +9,23 @@ from leo3ltb import format, ProblemVariant
 '''
 logging
 '''
-from leo3ltb.concurrent import threading
-from leo3ltb.concurrent import process
-from leo3ltb.scheduler import scheduler
+import logging
+#from leo3ltb.concurrent import threading
+#from leo3ltb.concurrent import process
+#from leo3ltb.scheduler import scheduler
 logger = logging.getLogger(__name__)
 
-threading.logger.setLevel(logging.DEBUG)
-process.logger.setLevel(logging.DEBUG)
-scheduler.logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.DEBUG)
+#threading.logger.setLevel(logging.DEBUG)
+#process.logger.setLevel(logging.DEBUG)
+#scheduler.logger.setLevel(logging.DEBUG)
+#logger.setLevel(logging.DEBUG)
 
-factorVariant3 = 0.67
-factorVariant1 = 0.5
-factorVariant2 = 1.0
+FACTOR_VARIANT_3_HOL_POLY_1 = 0.67
+FACTOR_VARIANT_3_FOF_POLY_1 = 0.5
+FACTOR_VARIANT_3_HOL_POLY_2 = 1.0
+FACTOR_VARIANT_3_HOL_MONO_1 = 1.0
+NUM_THREADS = 3
+MAX_TIMEOUT = 60
 
 def calculateTimeout(factor):
     def t(batch, problemVariant, overallTimeleft, problemTimeUsed, problemTimeleft):
@@ -31,7 +34,9 @@ def calculateTimeout(factor):
             tpp = overallTimeleft
         else:
             tpp = int(overallTimeleft / num_of_open_problems)
-        return int(factor * tpp)
+
+        tpp *= NUM_THREADS
+        return min(int(factor * tpp), min(MAX_TIMEOUT, overallTimeleft))
     return t
 
 class MyScheduler(ProveScheduler):
@@ -44,12 +49,24 @@ class MyScheduler(ProveScheduler):
 
     def onNoSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.yellow('onNoSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        
+        problem = problemVariant.problem
+        if problemVariant.variant == '^3':
+            for key, pv in problem.variants.items():
+                if pv.variant == '^3.2':
+                    self.terminate(pv)
+        if problemVariant.variant == '^1':
+            problemVariant.problem.setFinished()
 
     def onTimeout(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        if problemVariant.variant == '^1':
+            problemVariant.problem.setFinished()
 
     def onUserForced(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        if problemVariant.variant == '^1':
+            problemVariant.problem.setFinished()
 
     def onStart(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.green('onStart {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
@@ -57,15 +74,15 @@ class MyScheduler(ProveScheduler):
 args = leo3ltb.parse_args()
 with leo3ltb.batches_from_args(args) as batches:
     for batch in batches:
-        threading.logger.addHandler(batch.log)
-        process.logger.addHandler(batch.log)
-        scheduler.logger.addHandler(batch.log)
-        logger.addHandler(batch.log)
+        #threading.logger.addHandler(batch.log)
+        #process.logger.addHandler(batch.log)
+        #scheduler.logger.addHandler(batch.log)
+        #logger.addHandler(batch.log)
 
         assert batch.definition.config.get('execution.order', None)=='unordered'
 
         scheduler = MyScheduler( 
-            threads=3,
+            threads=NUM_THREADS,
             schedulerProcessClass=Leo3SchedulerProcess,
             batch=batch,
             basepath=os.path.dirname(os.path.abspath(args.batch)),
@@ -73,29 +90,16 @@ with leo3ltb.batches_from_args(args) as batches:
             problemTimeout=batch.definition.config.problemTimeout(),
         )
         logger.info(format.white('Overall timeout: {}, Number of problems in batch: {}').format(batch.definition.config.overallTimeout(), len(batch.definition.problems)))
-        '''
-        Let T be the total timeout of the batch
-        Let N be the total number of problems (not variants!) of the batch
-        We know that there is ONE poly variant (^3) and TWO mono variants (^1 and ^2)
-        Let tpp be the timeout per problem, i.e., have tpp = floor(T/N)
-        Let rest be the time that is remaining from previous variant proof attempts
         
-        We schedule as follows:
-        (1) Try ^3 for 2/3*tpp
-            If success, great!
-            If no-success:
-        (2) Try ^1 for 1/3*tpp+rest
-            If success, great!
-            If no-success and rest>0:
-        (3) Try ^2 for rest
-        '''
-
-        for problem in batch.definition.problems:
-            scheduler.prove(ProblemVariant(problem, variant='^3'), timeout=calculateTimeout(factorVariant3))
-        for problem in batch.definition.problems:
-            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=calculateTimeout(factorVariant1))
-        for problem in batch.definition.problems:
-            scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=calculateTimeout(factorVariant2))
+        problems = batch.definition.problems
+        for problem in problems:
+            scheduler.prove(ProblemVariant(problem, variant='^3'), timeout=calculateTimeout(FACTOR_VARIANT_3_HOL_POLY_1))
+        for problem in problems:
+            scheduler.prove(ProblemVariant(problem, variant='_3'), timeout=calculateTimeout(FACTOR_VARIANT_3_FOF_POLY_1))
+        for problem in reversed(problems):
+            scheduler.prove(ProblemVariant(problem, variant='^3.2'), timeout=calculateTimeout(FACTOR_VARIANT_3_HOL_POLY_2))
+        for problem in problems:
+            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=calculateTimeout(FACTOR_VARIANT_3_HOL_MONO_1))
             
         scheduler.wait()
         '''
