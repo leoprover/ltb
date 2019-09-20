@@ -67,6 +67,7 @@ class ProblemVariant:
         self.problem.variants[variant] = self
 
         self.variant = variant
+        self.ltbVariant = variant[0:2]
         self.szsStatus = 'NotTriedYet'
         self.stdout = []
         self.stderr = []
@@ -78,21 +79,21 @@ class ProblemVariant:
         The accual problem definition file.
         FilePattern 'Problems/HL400001*.p' with variant '^3' -> 'Problems/HL400001^3.p'
         '''
-        problemFile = self.problem.filePattern.replace('*', self.variant)
+        problemFile = self.problem.filePattern.replace('*', self.ltbVariant)
         return problemFile
 
     def getOutfile(self):
         '''
         Output filename of the problem variant. 
         '''
-        outputFile = self.problem.output + self.variant + '.out'
+        outputFile = self.problem.output + self.ltbVariant + '.out'
         return outputFile
 
     def getErrfile(self):
         '''
         Output filename of the problem variant. 
         '''
-        outputFile = self.problem.output + self.variant + '.err'
+        outputFile = self.problem.output + self.ltbVariant + '.err'
         return outputFile
 
     def isSuccessful(self):

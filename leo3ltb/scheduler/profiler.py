@@ -70,7 +70,7 @@ def plot(problemVariants, *, zero, outfile, numThreads):
         ).set_index('Problem')
 
         dfs.append(df)
-        labels.append(v)
+        labels.append("v"+v)
 
     ax = plot_grouped_stacked_bar(dfs, labels, title='LTB Scheduler - Problem Timings using {} Threads'.format(numThreads), color=colors)
     ax.set_ylabel("Problems")
