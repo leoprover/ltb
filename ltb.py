@@ -113,4 +113,6 @@ with leo3ltb.batches_from_args(args) as batches:
         '''
         a profile will be stored in [tmpdir]/profile.png
         '''
-        # scheduler.storeProfile('profile.png')
+
+        if batch.withProfile:
+            scheduler.storeProfile('profile.png')

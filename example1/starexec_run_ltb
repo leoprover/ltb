@@ -1,8 +1,0 @@
-#!/bin/sh
-
-BATCHFILE=$1
-OUTDIR=$2
-
-# export to let leo know where import files are
-export TPTP=.
-python3 ../ltb.py $BATCHFILE $OUTDIR

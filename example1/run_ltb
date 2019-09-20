@@ -1,5 +1,10 @@
 #!/bin/sh
 
-# export to let leo know where import files are
+#HERE=`dirname $0`
+
 export TPTP=.
-python3 ../ltb.py batch1 Output~ --tempdir Tmp~ --logdir Log~ --clearoutputdir
+#export LEO3=$HERE/leo3.jar
+#export EPROVER=$HERE/externals/eprover
+#export CVC4=$HERE/externals/cvc4
+
+python3 ../ltb.py batch1 Output~ --tempdir Tmp~ --logdir Log~ --clearoutputdir --withProfile

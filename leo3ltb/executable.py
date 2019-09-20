@@ -55,6 +55,10 @@ def parse_args():
         help='whether to clear the output dir',
         action='store_const', default=False, const=True,
     )
+    parser.add_argument('--withProfile',
+        help='whether generate a timing profile',
+        action='store_const', default=False, const=True,
+    )
     args = parser.parse_args()
     return args
 
@@ -73,6 +77,7 @@ def batch_from_args(args):
         outdir=args.outdir,
         logdir=args.logdir,
         clearoutputdir=args.clearoutputdir,
+        withProfile=args.withProfile,
     )
 
 def batches_from_args(args):
@@ -90,5 +95,6 @@ def batches_from_args(args):
         outdir=args.outdir,
         logdir=args.logdir,
         clearoutputdir=args.clearoutputdir,
+        withProfile=args.withProfile,
     )
 

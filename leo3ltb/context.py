@@ -42,14 +42,15 @@ class processBatches:
     ```
     @see LTBBatchContext below.
     '''
-    def __init__(self, batchDefinitions, *, outdir='', tempdir=None, logdir=None, clearoutputdir=False):
+    def __init__(self, batchDefinitions, *, outdir='', tempdir=None, logdir=None, clearoutputdir=False, withProfile=False):
         self.batches = []
         for i, b in enumerate(batchDefinitions):
             self.batches.append(processBatch(b, 
                 outdir=outdir, 
                 tempdir=tempdir+str(i) if tempdir else None, 
                 logdir=logdir+str(i) if logdir else None, 
-                clearoutputdir=clearoutputdir
+                clearoutputdir=clearoutputdir,
+                withProfile=withProfile,
             ))
 
     def __enter__(self):
@@ -72,12 +73,19 @@ class processBatch:
     ```
     @see LTBBatchContext below.
     '''
-    def __init__(self, batchDefinition, *, outdir='', tempdir=None, logdir=None, clearoutputdir=False):
+    def __init__(self, batchDefinition, *, 
+        outdir='', 
+        tempdir=None, 
+        logdir=None, 
+        clearoutputdir=False,
+        withProfile=False
+    ):
         self.definition = batchDefinition
         self.outdir = outdir
         self.tempdir = tempdir
         self.logdir = logdir
         self.clearoutputdir = clearoutputdir
+        self.withProfile = withProfile
 
     def __enter__(self):
         # if a tempdir is given, use a given existing directory, otherwise create a temp TemporaryDirectory
@@ -102,6 +110,7 @@ class processBatch:
             tempdir=tempDirectory,
             outdir=outDirectory,
             logdir=logDirectory,
+            withProfile=self.withProfile,
         )
 
         return self.context
@@ -113,11 +122,12 @@ class processBatch:
             self.context.logdir.cleanup()
 
 class LTBBatchContext:
-    def __init__(self, *, definition, outdir, tempdir, logdir):
+    def __init__(self, *, definition, outdir, tempdir, logdir, withProfile):
         self.definition = definition #: definition of the batch
         self.tempdir = tempdir
         self.outdir = outdir
         self.logdir = logdir
+        self.withProfile = withProfile
 
         self.log = logging.FileHandler(os.path.join(self.logdir.name, 'batch.log'))
         self.log.setLevel(logging.DEBUG)
