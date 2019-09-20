@@ -44,11 +44,11 @@ class MyScheduler(ProveScheduler):
     batch - wc
     '''
     def onSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.green('onSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        #logger.info(format.green('onSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
         problemVariant.problem.setFinished()
 
     def onNoSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.yellow('onNoSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        #logger.info(format.yellow('onNoSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
         
         problem = problemVariant.problem
         if problemVariant.variant == '^3.1':
@@ -59,17 +59,18 @@ class MyScheduler(ProveScheduler):
             problemVariant.problem.setFinished()
 
     def onTimeout(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        #logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
         if problemVariant.variant == '^1.1':
             problemVariant.problem.setFinished()
 
     def onUserForced(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        #logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
         if problemVariant.variant == '^1.1':
             problemVariant.problem.setFinished()
 
     def onStart(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.green('onStart {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        #logger.info(format.green('onStart {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        pass
 
 args = leo3ltb.parse_args()
 with leo3ltb.batches_from_args(args) as batches:
