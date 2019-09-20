@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 FACTOR_VARIANT_3_HOL_POLY_1 = 0.67
 FACTOR_VARIANT_3_FOF_POLY_1 = 0.5
 FACTOR_VARIANT_3_HOL_POLY_2 = 1.0
-FACTOR_VARIANT_3_HOL_MONO_1 = 1.0
+FACTOR_VARIANT_3_HOL_NOTY_1 = 1.0
 NUM_THREADS = 3
 MAX_TIMEOUT = 60
 
@@ -51,21 +51,21 @@ class MyScheduler(ProveScheduler):
         logger.info(format.yellow('onNoSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
         
         problem = problemVariant.problem
-        if problemVariant.variant == '^3':
+        if problemVariant.variant == '^3.1':
             for key, pv in problem.variants.items():
                 if pv.variant == '^3.2':
                     self.terminate(pv)
-        if problemVariant.variant == '^1':
+        if problemVariant.variant == '^1.1':
             problemVariant.problem.setFinished()
 
     def onTimeout(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
-        if problemVariant.variant == '^1':
+        if problemVariant.variant == '^1.1':
             problemVariant.problem.setFinished()
 
     def onUserForced(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
-        if problemVariant.variant == '^1':
+        if problemVariant.variant == '^1.1':
             problemVariant.problem.setFinished()
 
     def onStart(self, problemVariant, overallTimeleft, problemTimeleft):
@@ -93,13 +93,13 @@ with leo3ltb.batches_from_args(args) as batches:
         
         problems = batch.definition.problems
         for problem in problems:
-            scheduler.prove(ProblemVariant(problem, variant='^3'), timeout=calculateTimeout(FACTOR_VARIANT_3_HOL_POLY_1))
+            scheduler.prove(ProblemVariant(problem, variant='^3.1'), timeout=calculateTimeout(FACTOR_VARIANT_3_HOL_POLY_1))
         for problem in problems:
-            scheduler.prove(ProblemVariant(problem, variant='_3'), timeout=calculateTimeout(FACTOR_VARIANT_3_FOF_POLY_1))
+            scheduler.prove(ProblemVariant(problem, variant='_3.1'), timeout=calculateTimeout(FACTOR_VARIANT_3_FOF_POLY_1))
         for problem in reversed(problems):
             scheduler.prove(ProblemVariant(problem, variant='^3.2'), timeout=calculateTimeout(FACTOR_VARIANT_3_HOL_POLY_2))
         for problem in problems:
-            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=calculateTimeout(FACTOR_VARIANT_3_HOL_MONO_1))
+            scheduler.prove(ProblemVariant(problem, variant='^1.1'), timeout=calculateTimeout(FACTOR_VARIANT_3_HOL_NOTY_1))
             
         scheduler.wait()
         '''
