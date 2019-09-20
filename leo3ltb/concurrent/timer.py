@@ -35,17 +35,17 @@ class Timer:
 
     def getScheduled(self, zero = 0):
         if self.scheduledTime is None:
-            return None
+            return 0
         return self.scheduledTime - zero
 
     def getStart(self, zero = 0):
         if self.startTime is None:
-            return None
+            return 0
         return self.startTime - zero
 
     def getEnd(self, zero = 0):
         if self.endTime is None:
-            return None
+            return 0
         return self.endTime - zero
 
     def getTimeRunning(self):

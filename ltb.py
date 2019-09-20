@@ -43,26 +43,10 @@ class MyScheduler(ProveScheduler):
         problemVariant.problem.setFinished()
 
     def onNoSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
-        problem = problemVariant.problem
         logger.info(format.yellow('onNoSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
 
-        if problemVariant.variant == '^3':
-            self.prove(ProblemVariant(problem, variant='^1'), timeout=calculateTimeout(factorVariant1))
-        if problemVariant.variant == '^1':
-            self.prove(ProblemVariant(problem, variant='^2'), timeout=calculateTimeout(factorVariant2))
-        if problemVariant.variant == '^2':
-            problemVariant.problem.setFinished()
-
     def onTimeout(self, problemVariant, overallTimeleft, problemTimeleft):
-        problem = problemVariant.problem
         logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
-
-        if problemVariant.variant == '^3':
-            self.prove(ProblemVariant(problem, variant='^1'), timeout=calculateTimeout(factorVariant1))
-        if problemVariant.variant == '^1':
-            self.prove(ProblemVariant(problem, variant='^2'), timeout=calculateTimeout(factorVariant2))
-        if problemVariant.variant == '^2':
-            problemVariant.problem.setFinished()
 
     def onUserForced(self, problemVariant, overallTimeleft, problemTimeleft):
         logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
@@ -108,6 +92,10 @@ with leo3ltb.batches_from_args(args) as batches:
 
         for problem in batch.definition.problems:
             scheduler.prove(ProblemVariant(problem, variant='^3'), timeout=calculateTimeout(factorVariant3))
+        for problem in batch.definition.problems:
+            scheduler.prove(ProblemVariant(problem, variant='^1'), timeout=calculateTimeout(factorVariant1))
+        for problem in batch.definition.problems:
+            scheduler.prove(ProblemVariant(problem, variant='^2'), timeout=calculateTimeout(factorVariant2))
             
         scheduler.wait()
         '''

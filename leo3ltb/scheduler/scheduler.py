@@ -18,11 +18,12 @@ class ProveSchedulerProcess(Process):
     '''
     Process runned by the Scheduler to prove a [problemVariant](data.md).
     '''
-    def __init__(self, problemVariant, problemFile, *, timeout, withCASCStdout):
+    def __init__(self, problemVariant, problemFile, *, timeout, withCASCStdout, index):
         self.problemVariant = problemVariant
         self.withCASCStdout = withCASCStdout
         self.timeout = timeout
         self.problemFile = problemFile
+        self._index = index
 
         super(ProveSchedulerProcess, self).__init__(generateCall=self.generateCall)
 
@@ -51,6 +52,9 @@ class ProveSchedulerProcess(Process):
         ```
         '''
         raise NotImplementedError
+
+    def __index__(self):
+        return self._index
 
 class Leo3SchedulerProcess(ProveSchedulerProcess):
     '''
@@ -103,6 +107,7 @@ class ProveScheduler(ThreadProcessExecuter):
 
         self.timer = CountdownTimer(overallTimeout)
         self.numThreads = threads
+        self.problemIndex = 0
 
     def status(self):
         '''
@@ -150,6 +155,7 @@ class ProveScheduler(ThreadProcessExecuter):
     def prove(self, problemVariant, *, timeout):
         '''
         Enqueus a problemVariant to prove.
+        WARNING: not thread-save
         '''
         self.scheduleHistory.append(problemVariant)
 
@@ -163,7 +169,11 @@ class ProveScheduler(ThreadProcessExecuter):
             problemFile=os.path.join(self.basepath,problemFile),
             timeout=lambda: timeout(self.batch, problemVariant, self.timer.timeleft(), self.getProblemTimeUsed(problemVariant.problem), self.getProblemTimeLeft(problemVariant.problem)),
             withCASCStdout=self.withCASCStdout,
+            index=self.problemIndex,
         )
+        # the index needs to be unique for each enqued problem variant
+        self.problemIndex += 1
+
         problemVariant.process = process
         problemVariant.szsStatus = 'NotTriedYet'
         problemVariant.schedulerStatus = 'Queued'
@@ -176,6 +186,11 @@ class ProveScheduler(ThreadProcessExecuter):
         '''
         Terminate the prove of the 'problemVariant'.
         '''
+        if not problemVariant.process.isStarted():
+            self.cancle(problemVariant.process)
+            problemVariant.szsStatus = 'Forced'
+            return True
+
         if not problemVariant.process.isRunning():
             return False
 
@@ -186,7 +201,6 @@ class ProveScheduler(ThreadProcessExecuter):
         process.terminate()
         logger.debug(format.red('terminating {}').format(process))
         return True
-
 
     def terminateProblemVariants(self, problem):
         '''

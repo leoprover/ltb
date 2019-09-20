@@ -21,6 +21,7 @@ class Process:
         self.kwargs = kwargs
         self._isForcedTerminated = False
         self._isRunning = False
+        self._isStarted = False
 
         self._timeout = timeout
         self._call = call
@@ -34,6 +35,7 @@ class Process:
     def start(self):
         self.state = self.STARTED
         self._isRunning = True
+        self._isStarted = True
         
         if self._generateCall:
             timeout, call = self._generateCall()
@@ -72,6 +74,9 @@ class Process:
 
     def isRunning(self):
         return self._isRunning
+
+    def isStarted(self):
+        return self._isStarted
 
     def communicate(self):
         try:
@@ -191,6 +196,9 @@ class ThreadProcessExecuter(ThreadedTaskExecuter):
         for t in ts:
             ps.append(t.process)
         return ps
+
+    def cancle(self, process):
+        return super().cancle(process.task)
 
     def terminateProcess(self, process):
         process.terminate()

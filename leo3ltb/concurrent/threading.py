@@ -86,6 +86,13 @@ class ThreadedTaskExecuter:
         self._scheduledTasks.append(task)
         self._refillActiveTasks()
 
+    def cancle(self, task):
+        try:
+            self._scheduledTasks.remove(task)
+        except ValueError:
+            return False
+        return True
+
     def _refillActiveTasks(self):
         '''
         Add threads to the executer as long as the maximum threadcount is not reached.
@@ -123,9 +130,6 @@ class ThreadedTaskExecuter:
                 self._onFinish(future)
 
             self._refillActiveTasks()
-
-    def cancle(self, task):
-        task.future.cancle()
 
     def _onFinish(self, future):
         task = future.task
