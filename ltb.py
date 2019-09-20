@@ -33,10 +33,10 @@ def calculateTimeout(factor):
         if num_of_open_problems == 0:
             tpp = overallTimeleft
         else:
-            tpp = int(overallTimeleft / num_of_open_problems)
+            tpp = overallTimeleft / num_of_open_problems
 
         tpp *= NUM_THREADS
-        return min(int(factor * tpp), min(MAX_TIMEOUT, overallTimeleft))
+        return int(min(factor * tpp, min(MAX_TIMEOUT, overallTimeleft)))
     return t
 
 class MyScheduler(ProveScheduler):
