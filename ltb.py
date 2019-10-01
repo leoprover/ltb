@@ -10,15 +10,15 @@ from leo3ltb import format, ProblemVariant
 '''
 logging
 '''
-from leo3ltb.concurrent import threading
-from leo3ltb.concurrent import process
-from leo3ltb.scheduler import scheduler
+#from leo3ltb.concurrent import threading
+#from leo3ltb.concurrent import process
+#from leo3ltb.scheduler import scheduler
 logger = logging.getLogger(__name__)
 
-threading.logger.setLevel(logging.DEBUG)
-process.logger.setLevel(logging.DEBUG)
-scheduler.logger.setLevel(logging.DEBUG)
-logger.setLevel(logging.DEBUG)
+#threading.logger.setLevel(logging.DEBUG)
+#process.logger.setLevel(logging.DEBUG)
+#scheduler.logger.setLevel(logging.DEBUG)
+#logger.setLevel(logging.DEBUG)
 
 factorVariant3 = 0.67
 factorVariant1 = 0.5
@@ -40,12 +40,12 @@ class MyScheduler(ProveScheduler):
     batch - wc
     '''
     def onSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.green('onSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        #logger.info(format.green('onSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
         problemVariant.problem.setFinished()
         
     def onNoSuccess(self, problemVariant, overallTimeleft, problemTimeleft):
         problem = problemVariant.problem
-        logger.info(format.yellow('onNoSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        #logger.info(format.yellow('onNoSuccess {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
 
         if problemVariant.variant == '^3':
             self.prove(ProblemVariant(problem, variant='^1'), timeout=calculateTimeout(factorVariant1))
@@ -56,7 +56,7 @@ class MyScheduler(ProveScheduler):
 
     def onTimeout(self, problemVariant, overallTimeleft, problemTimeleft):
         problem = problemVariant.problem
-        logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        #logger.info(format.red('onTimeout {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
 
         if problemVariant.variant == '^3':
             self.prove(ProblemVariant(problem, variant='^1'), timeout=calculateTimeout(factorVariant1))
@@ -66,18 +66,20 @@ class MyScheduler(ProveScheduler):
             problemVariant.problem.setFinished()
 
     def onUserForced(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        pass
+        #logger.info(format.red('onUserForced {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
 
     def onStart(self, problemVariant, overallTimeleft, problemTimeleft):
-        logger.info(format.green('onStart {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
+        pass
+        #logger.info(format.green('onStart {} OverallTimeleft: {} ProblemTimeleft: {} status:\n{}').format(problemVariant, overallTimeleft, problemTimeleft, self.status()))
 
 args = leo3ltb.parse_args()
 with leo3ltb.batches_from_args(args) as batches:
     for batch in batches:
-        threading.logger.addHandler(batch.log)
-        process.logger.addHandler(batch.log)
-        scheduler.logger.addHandler(batch.log)
-        logger.addHandler(batch.log)
+        #threading.logger.addHandler(batch.log)
+        #process.logger.addHandler(batch.log)
+        #scheduler.logger.addHandler(batch.log)
+        #logger.addHandler(batch.log)
 
         assert batch.definition.config.get('execution.order', None)=='unordered'
 
@@ -89,7 +91,7 @@ with leo3ltb.batches_from_args(args) as batches:
             overallTimeout=batch.definition.config.overallTimeout(),
             problemTimeout=batch.definition.config.problemTimeout(),
         )
-        logger.info(format.white('Overall timeout: {}, Number of problems in batch: {}').format(batch.definition.config.overallTimeout(), len(batch.definition.problems)))
+        #logger.info(format.white('Overall timeout: {}, Number of problems in batch: {}').format(batch.definition.config.overallTimeout(), len(batch.definition.problems)))
         '''
         Let T be the total timeout of the batch
         Let N be the total number of problems (not variants!) of the batch

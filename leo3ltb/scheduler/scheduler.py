@@ -286,7 +286,7 @@ class ProveScheduler(ThreadProcessExecuter):
         problemVariant.schedulerStatus = 'Started'
 
         if self.withCASCStdout:
-            print('% SZS status Started for {}'.format(problemVariant.getProblemFile()))
+            print('% SZS status Started for {}'.format(problemVariant.getProblemFile()), flush=True)
 
         self.onStart(problemVariant, self.timer.timeleft(), self.getProblemTimeLeft(problem))
 
@@ -404,5 +404,5 @@ class ProveScheduler(ThreadProcessExecuter):
         self.finishHistory.append(problemVariant)
 
         if self.withCASCStdout:
-            print('% SZS status {} for {}'.format(problemVariant.szsStatus, problemVariant.getProblemFile()))
-            print('% SZS status Ended for {}'.format(problemVariant.getProblemFile()))
+            print('% SZS status {} for {}'.format(problemVariant.szsStatus, problemVariant.getProblemFile()), flush=True)
+            print('% SZS status Ended for {}'.format(problemVariant.getProblemFile()), flush=True)
